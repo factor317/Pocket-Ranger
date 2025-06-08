@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pocket-ranger-service
+  namespace: pocket-ranger
+  labels:
+    app: pocket-ranger
+    component: app
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8081"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8081
+    protocol: TCP
+    name: http
+  selector:
+    app: pocket-ranger
+    component: app
+  sessionAffinity: None

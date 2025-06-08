@@ -1,0 +1,227 @@
+openapi: 3.0.3
+info:
+  title: Pocket Ranger API
+  description: |
+    Pocket Ranger is an outdoor adventure planning application that helps users discover and plan outdoor activities.
+    This POC version includes a mock AI service for location recommendations.
+  version: 1.0.0
+  contact:
+    name: Pocket Ranger Team
+    email: support@pocketranger.app
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8081/api
+    description: Development server
+  - url: https://pocket-ranger.app/api
+    description: Production server
+
+paths:
+  /pocPlan:
+    post:
+      summary: Get Activity Recommendations
+      description: |
+        Accepts user input describing desired outdoor activities and returns personalized location recommendations
+        with detailed itineraries. Currently uses a mock AI service with hardcoded location data.
+      operationId: getPocPlan
+      tags:
+        - Planning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+            examples:
+              hiking_example:
+                summary: Hiking near Madison
+                value:
+                  userInput: "hiking near Madison"
+              fishing_example:
+                summary: Fishing activity
+                value:
+                  userInput: "fishing for the weekend"
+              exploration_example:
+                summary: City exploration
+                value:
+                  userInput: "explore Milwaukee for a day"
+      responses:
+        '200':
+          description: Successful recommendation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationRecommendation'
+              examples:
+                devils_lake_example:
+                  summary: Devil's Lake State Park Recommendation
+                  value:
+                    name: "Devil's Lake State Park - 3 Day Adventure"
+                    activity: "hiking"
+                    city: "Baraboo, WI"
+                    description: "Experience Wisconsin's most popular state park with stunning bluffs, crystal-clear lake, and challenging hiking trails perfect for a weekend getaway."
+                    schedule:
+                      - time: "8:00 AM"
+                        activity: "East Bluff Trail Hike"
+                        location: "Devil's Lake State Park"
+                        partnerLink: "https://www.alltrails.com/trail/us/wisconsin/devils-lake-east-bluff-trail"
+                        partnerName: "AllTrails"
+                      - time: "12:00 PM"
+                        activity: "Lunch at Dells"
+                        location: "Wisconsin Dells"
+                        partnerLink: "https://www.opentable.com/wisconsin-dells-restaurants"
+                        partnerName: "OpenTable"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Invalid input provided"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Internal server error"
+    options:
+      summary: CORS preflight
+      description: Handle CORS preflight requests
+      responses:
+        '200':
+          description: CORS headers
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+                example: "*"
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+                example: "POST, OPTIONS"
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+                example: "Content-Type"
+
+components:
+  schemas:
+    PlanRequest:
+      type: object
+      required:
+        - userInput
+      properties:
+        userInput:
+          type: string
+          description: Natural language description of desired outdoor activity
+          minLength: 1
+          maxLength: 500
+          example: "hiking near Madison for the weekend"
+      additionalProperties: false
+
+    LocationRecommendation:
+      type: object
+      required:
+        - name
+        - activity
+        - city
+        - description
+        - schedule
+      properties:
+        name:
+          type: string
+          description: Name of the recommended location or activity plan
+          example: "Devil's Lake State Park - 3 Day Adventure"
+        activity:
+          type: string
+          description: Primary activity type
+          enum: [hiking, fishing, exploration, dining, social]
+          example: "hiking"
+        city:
+          type: string
+          description: City and state location
+          example: "Baraboo, WI"
+        description:
+          type: string
+          description: Detailed description of the location and activities
+          example: "Experience Wisconsin's most popular state park with stunning bluffs and trails."
+        schedule:
+          type: array
+          description: Detailed itinerary with scheduled activities
+          items:
+            $ref: '#/components/schemas/ScheduleItem'
+          minItems: 1
+
+    ScheduleItem:
+      type: object
+      required:
+        - time
+        - activity
+        - location
+      properties:
+        time:
+          type: string
+          description: Scheduled time for the activity
+          pattern: '^([0-1]?[0-9]|2[0-3]):[0-5][0-9] (AM|PM)$'
+          example: "8:00 AM"
+        activity:
+          type: string
+          description: Name of the scheduled activity
+          example: "East Bluff Trail Hike"
+        location:
+          type: string
+          description: Specific location for the activity
+          example: "Devil's Lake State Park"
+        partnerLink:
+          type: string
+          format: uri
+          description: Optional link to partner service for more information
+          example: "https://www.alltrails.com/trail/us/wisconsin/devils-lake-east-bluff-trail"
+        partnerName:
+          type: string
+          description: Name of the partner service
+          example: "AllTrails"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+          example: "Invalid input provided"
+        details:
+          type: string
+          description: Additional error details for debugging
+          example: "userInput field is required and must be a non-empty string"
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Optional JWT token for authenticated requests. 
+        The API supports both authenticated and guest usage for POC purposes.
+
+security:
+  - bearerAuth: []
+  - {} # Allow unauthenticated requests
+
+tags:
+  - name: Planning
+    description: Activity planning and recommendation endpoints
+  - name: Authentication
+    description: User authentication endpoints (future)
+  - name: Profile
+    description: User profile management endpoints (future)
+
+externalDocs:
+  description: Pocket Ranger Documentation
+  url: https://docs.pocketranger.app

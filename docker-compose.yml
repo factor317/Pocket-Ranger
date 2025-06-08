@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  pocket-ranger-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8081:8081"
+    environment:
+      - NODE_ENV=production
+      - EXPO_PUBLIC_API_URL=http://localhost:8081
+      - PORT=8081
+      - LOG_LEVEL=info
+    volumes:
+      - app-cache:/app/.next/cache
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pocket-ranger.rule=Host(`localhost`)"
+      - "traefik.http.services.pocket-ranger.loadbalancer.server.port=8081"
+
+  # Optional: Reverse proxy for production-like setup
+  traefik:
+    image: traefik:v2.10
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --entrypoints.web.address=:80
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+    ports:
+      - "80:80"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    profiles:
+      - proxy
+
+volumes:
+  app-cache:
+    driver: local
+
+networks:
+  default:
+    name: pocket-ranger-network

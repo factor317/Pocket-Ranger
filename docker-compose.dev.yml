@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  pocket-ranger-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    ports:
+      - "8081:8081"
+    environment:
+      - NODE_ENV=development
+      - EXPO_PUBLIC_API_URL=http://localhost:8081
+      - PORT=8081
+      - LOG_LEVEL=debug
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - app-cache:/app/.next/cache
+    command: npm run dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Firebase emulator for local development
+  firebase-emulator:
+    image: firebase/firebase-tools:latest
+    ports:
+      - "9099:9099"  # Auth emulator
+      - "8080:8080"  # Firestore emulator
+      - "4000:4000"  # Emulator UI
+    volumes:
+      - ./firebase.json:/firebase.json:ro
+      - ./.firebaserc:/.firebaserc:ro
+    command: firebase emulators:start --only auth,firestore
+    profiles:
+      - firebase
+
+volumes:
+  app-cache:
+    driver: local
+
+networks:
+  default:
+    name: pocket-ranger-dev-network

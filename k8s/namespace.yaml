@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pocket-ranger
+  labels:
+    app: pocket-ranger
+    environment: production
+    version: v1.0.0
