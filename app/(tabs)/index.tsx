@@ -11,7 +11,9 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, MapPin, Clock, ExternalLink } from 'lucide-react-native';
+import { Search, MapPin, Clock, ExternalLink, MessageCircle } from 'lucide-react-native';
+import VoiceRecorder from '@/components/VoiceRecorder';
+import VoiceToggle from '@/components/VoiceToggle';
 
 interface LocationRecommendation {
   name: string;
@@ -30,43 +32,110 @@ interface ScheduleItem {
   partnerName?: string;
 }
 
+interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+}
+
 export default function ExploreScreen() {
   const [userInput, setUserInput] = useState('');
   const [recommendation, setRecommendation] = useState<LocationRecommendation | null>(null);
   const [loading, setLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [conversation, setConversation] = useState<ConversationMessage[]>([]);
+  const [aiResponse, setAiResponse] = useState<string>('');
+  const [showConversation, setShowConversation] = useState(false);
 
-  const handleSearch = async () => {
-    if (!userInput.trim()) {
-      Alert.alert('Input Required', 'Please enter your activity preference');
+  const handleSearch = async (searchText?: string) => {
+    const inputText = searchText || userInput.trim();
+    
+    if (!inputText) {
+      Alert.alert('Input Required', 'Please enter your activity preference or use voice input');
       return;
     }
 
     setLoading(true);
-    setIsExpanded(false); // Collapse the input area
+    setIsExpanded(false);
     
     try {
-      const response = await fetch('/api/pocPlan', {
+      // First, process with Groq AI for conversation
+      const aiResponse = await processWithAI(inputText);
+      
+      if (aiResponse.shouldSearch) {
+        // Then search for adventure recommendations
+        const response = await fetch('/api/pocPlan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userInput: inputText }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch recommendation');
+        }
+
+        const data = await response.json();
+        setRecommendation(data);
+      }
+      
+      // Update conversation
+      const newConversation = [
+        ...conversation,
+        { role: 'user' as const, content: inputText, timestamp: Date.now() },
+        { role: 'assistant' as const, content: aiResponse.response, timestamp: Date.now() + 1 }
+      ];
+      setConversation(newConversation);
+      setAiResponse(aiResponse.response);
+      setShowConversation(true);
+      
+    } catch (error) {
+      Alert.alert('Error', 'Failed to get recommendation. Please try again.');
+      console.error('Search error:', error);
+      setIsExpanded(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const processWithAI = async (message: string) => {
+    try {
+      const response = await fetch('/api/groq-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userInput: userInput.trim() }),
+        body: JSON.stringify({
+          message,
+          conversationHistory: conversation.slice(-6), // Keep last 6 messages for context
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch recommendation');
+        throw new Error('AI processing failed');
       }
 
-      const data = await response.json();
-      setRecommendation(data);
+      return await response.json();
     } catch (error) {
-      Alert.alert('Error', 'Failed to get recommendation. Please try again.');
-      console.error('Search error:', error);
-      setIsExpanded(true); // Re-expand on error
-    } finally {
-      setLoading(false);
+      console.error('AI processing error:', error);
+      return {
+        response: "I'd love to help you plan your adventure! Let me search for some great options for you.",
+        shouldSearch: true,
+        extractedInfo: {}
+      };
     }
+  };
+
+  const handleVoiceTranscription = (transcribedText: string) => {
+    setUserInput(transcribedText);
+    // Automatically search when voice input is complete
+    handleSearch(transcribedText);
+  };
+
+  const handleVoiceError = (error: string) => {
+    Alert.alert('Voice Input Error', error);
   };
 
   const openPartnerLink = async (url: string) => {
@@ -86,6 +155,12 @@ export default function ExploreScreen() {
     setRecommendation(null);
     setIsExpanded(true);
     setUserInput('');
+    setShowConversation(false);
+    setAiResponse('');
+  };
+
+  const toggleConversation = () => {
+    setShowConversation(!showConversation);
   };
 
   return (
@@ -99,7 +174,7 @@ export default function ExploreScreen() {
           />
           <View style={styles.headerOverlay}>
             <Text style={styles.title}>Pocket Ranger</Text>
-            <Text style={styles.subtitle}>Your outdoor adventure companion</Text>
+            <Text style={styles.subtitle}>Your voice-powered adventure companion</Text>
           </View>
         </View>
 
@@ -108,36 +183,63 @@ export default function ExploreScreen() {
           styles.searchContainer,
           isExpanded ? styles.searchContainerExpanded : styles.searchContainerCollapsed
         ]}>
-          <View style={[
-            styles.inputContainer,
-            isExpanded ? styles.inputContainerExpanded : styles.inputContainerCollapsed
-          ]}>
-            <Search size={20} color="#6B8E23" style={styles.searchIcon} />
-            <TextInput
-              style={[
-                styles.textInput,
-                isExpanded ? styles.textInputExpanded : styles.textInputCollapsed
-              ]}
-              placeholder="What's your next adventure? (e.g., hiking for 3 days near Avon Colorado, suggest hikes under 6 miles and at least one under 2. suggest breweries for 1 night, a place with bison burgers and a tourist must see attraction and build the itinerary)"
-              value={userInput}
-              onChangeText={setUserInput}
-              placeholderTextColor="#8B9DC3"
-              multiline={isExpanded}
-              numberOfLines={isExpanded ? 8 : 1}
-            />
-          </View>
-          
-          <TouchableOpacity
-            style={[styles.searchButton, loading && styles.searchButtonDisabled]}
-            onPress={handleSearch}
+          {/* Voice/Text Toggle */}
+          <VoiceToggle
+            isVoiceMode={isVoiceMode}
+            onToggle={setIsVoiceMode}
             disabled={loading}
-          >
-            <Text style={styles.searchButtonText}>
-              {loading ? 'Planning...' : 'Find Adventure'}
-            </Text>
-          </TouchableOpacity>
+          />
 
-          {recommendation && (
+          {isVoiceMode ? (
+            /* Voice Input */
+            <View style={styles.voiceInputContainer}>
+              <VoiceRecorder
+                onTranscriptionComplete={handleVoiceTranscription}
+                onError={handleVoiceError}
+                disabled={loading}
+              />
+              {userInput ? (
+                <View style={styles.transcriptionContainer}>
+                  <Text style={styles.transcriptionLabel}>You said:</Text>
+                  <Text style={styles.transcriptionText}>"{userInput}"</Text>
+                </View>
+              ) : null}
+            </View>
+          ) : (
+            /* Text Input */
+            <View style={[
+              styles.inputContainer,
+              isExpanded ? styles.inputContainerExpanded : styles.inputContainerCollapsed
+            ]}>
+              <Search size={20} color="#6B8E23" style={styles.searchIcon} />
+              <TextInput
+                style={[
+                  styles.textInput,
+                  isExpanded ? styles.textInputExpanded : styles.textInputCollapsed
+                ]}
+                placeholder="What's your next adventure? Try: 'I want to go hiking this Saturday, somewhere with a waterfall, not too far from Brookfield'"
+                value={userInput}
+                onChangeText={setUserInput}
+                placeholderTextColor="#8B9DC3"
+                multiline={isExpanded}
+                numberOfLines={isExpanded ? 6 : 1}
+              />
+            </View>
+          )}
+          
+          {!isVoiceMode && (
+            <TouchableOpacity
+              style={[styles.searchButton, loading && styles.searchButtonDisabled]}
+              onPress={() => handleSearch()}
+              disabled={loading}
+            >
+              <Text style={styles.searchButtonText}>
+                {loading ? 'Planning...' : 'Find Adventure'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {(recommendation || aiResponse) && (
             <TouchableOpacity
               style={styles.newSearchButton}
               onPress={handleNewSearch}
@@ -147,6 +249,44 @@ export default function ExploreScreen() {
           )}
         </View>
 
+        {/* AI Response */}
+        {aiResponse && (
+          <View style={styles.aiResponseContainer}>
+            <View style={styles.aiResponseHeader}>
+              <MessageCircle size={20} color="#6B8E23" />
+              <Text style={styles.aiResponseTitle}>Pocket Ranger Assistant</Text>
+              {conversation.length > 2 && (
+                <TouchableOpacity onPress={toggleConversation}>
+                  <Text style={styles.conversationToggle}>
+                    {showConversation ? 'Hide' : 'Show'} Conversation
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <Text style={styles.aiResponseText}>{aiResponse}</Text>
+            
+            {showConversation && conversation.length > 2 && (
+              <View style={styles.conversationContainer}>
+                <Text style={styles.conversationTitle}>Conversation History</Text>
+                {conversation.slice(0, -2).map((message, index) => (
+                  <View key={index} style={[
+                    styles.conversationMessage,
+                    message.role === 'user' ? styles.userMessage : styles.assistantMessage
+                  ]}>
+                    <Text style={[
+                      styles.conversationMessageText,
+                      message.role === 'user' ? styles.userMessageText : styles.assistantMessageText
+                    ]}>
+                      {message.content}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Adventure Recommendation */}
         {recommendation && (
           <View style={styles.recommendationContainer}>
             <View style={styles.recommendationHeader}>
@@ -243,10 +383,38 @@ const styles = StyleSheet.create({
     paddingTop: 24,
   },
   searchContainerExpanded: {
-    minHeight: '60vh', // 3/4 of remaining screen after header
+    minHeight: '50vh',
   },
   searchContainerCollapsed: {
     minHeight: 'auto',
+  },
+  voiceInputContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: '#BFD3C1',
+    alignItems: 'center',
+  },
+  transcriptionContainer: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    width: '100%',
+  },
+  transcriptionLabel: {
+    fontSize: 12,
+    fontFamily: 'Inter-SemiBold',
+    color: '#6B8E23',
+    marginBottom: 4,
+  },
+  transcriptionText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#333333',
+    fontStyle: 'italic',
   },
   inputContainer: {
     backgroundColor: '#FFFFFF',
@@ -258,7 +426,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   inputContainerExpanded: {
-    minHeight: 300,
+    minHeight: 200,
     alignItems: 'flex-start',
   },
   inputContainerCollapsed: {
@@ -315,6 +483,76 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter-SemiBold',
     color: '#6B8E23',
+  },
+  aiResponseContainer: {
+    margin: 24,
+    marginTop: 0,
+    backgroundColor: '#E8F5E8',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#BFD3C1',
+  },
+  aiResponseHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  aiResponseTitle: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: '#6B8E23',
+    marginLeft: 8,
+    flex: 1,
+  },
+  conversationToggle: {
+    fontSize: 12,
+    fontFamily: 'Inter-SemiBold',
+    color: '#6B8E23',
+    textDecorationLine: 'underline',
+  },
+  aiResponseText: {
+    fontSize: 15,
+    fontFamily: 'Inter-Regular',
+    color: '#333333',
+    lineHeight: 22,
+  },
+  conversationContainer: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#BFD3C1',
+  },
+  conversationTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#6B8E23',
+    marginBottom: 12,
+  },
+  conversationMessage: {
+    marginBottom: 8,
+    padding: 8,
+    borderRadius: 8,
+  },
+  userMessage: {
+    backgroundColor: '#FFFFFF',
+    alignSelf: 'flex-end',
+    maxWidth: '80%',
+  },
+  assistantMessage: {
+    backgroundColor: '#F0F8F0',
+    alignSelf: 'flex-start',
+    maxWidth: '80%',
+  },
+  conversationMessageText: {
+    fontSize: 13,
+    fontFamily: 'Inter-Regular',
+  },
+  userMessageText: {
+    color: '#333333',
+  },
+  assistantMessageText: {
+    color: '#555555',
   },
   recommendationContainer: {
     margin: 24,
