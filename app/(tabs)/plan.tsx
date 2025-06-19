@@ -10,7 +10,6 @@ export default function PlanScreen() {
         <Calendar size={24} color="#6B8E23" />
         <Text style={styles.title}>My Plans</Text>
       </View>
-      
       <ScrollView style={styles.scrollView}>
         <View style={styles.emptyState}>
           <MapPin size={48} color="#D4A5A5" />
