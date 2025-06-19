@@ -1,0 +1,36 @@
+{
+  "name": "Big Sur Coastal Wilderness",
+  "activity": "hiking",
+  "city": "Big Sur, CA",
+  "description": "Explore dramatic coastline, ancient redwood forests, and rugged mountains along California's most scenic stretch.",
+  "schedule": [
+    {
+      "time": "8:00 AM",
+      "activity": "McWay Falls Overlook",
+      "location": "Julia Pfeiffer Burns State Park",
+      "description": "Easy 0.6-mile walk to iconic 80-foot waterfall",
+      "partnerLink": "https://www.alltrails.com/trail/us/california/mcway-falls-overlook-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "11:00 AM",
+      "activity": "Bixby Creek Bridge Viewpoint",
+      "location": "Highway 1",
+      "description": "Iconic bridge and coastal views"
+    },
+    {
+      "time": "1:00 PM",
+      "activity": "Lunch at Nepenthe Restaurant",
+      "location": "Big Sur",
+      "description": "Legendary restaurant with panoramic ocean views",
+      "partnerLink": "https://www.opentable.com/nepenthe-restaurant",
+      "partnerName": "OpenTable"
+    },
+    {
+      "time": "4:00 PM",
+      "activity": "Pfeiffer Beach",
+      "location": "Los Padres National Forest",
+      "description": "Purple sand beach with keyhole rock formation"
+    }
+  ]
+}

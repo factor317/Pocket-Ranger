@@ -1,0 +1,38 @@
+{
+  "name": "Asheville Blue Ridge Adventure",
+  "activity": "hiking",
+  "city": "Asheville, NC",
+  "description": "Experience the beauty of the Blue Ridge Mountains with waterfalls, craft breweries, and Appalachian culture.",
+  "schedule": [
+    {
+      "time": "8:00 AM",
+      "activity": "Looking Glass Falls",
+      "location": "Pisgah National Forest",
+      "description": "Easy 0.6-mile walk to 60-foot waterfall",
+      "partnerLink": "https://www.alltrails.com/trail/us/north-carolina/looking-glass-falls-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "11:00 AM",
+      "activity": "Blue Ridge Parkway Scenic Drive",
+      "location": "Blue Ridge Parkway",
+      "description": "America's favorite drive through mountain scenery"
+    },
+    {
+      "time": "1:00 PM",
+      "activity": "Lunch at Tupelo Honey",
+      "location": "Asheville",
+      "description": "Southern comfort food with local ingredients",
+      "partnerLink": "https://www.opentable.com/tupelo-honey-asheville",
+      "partnerName": "OpenTable"
+    },
+    {
+      "time": "6:00 PM",
+      "activity": "Brewery Tour at Highland Brewing",
+      "location": "Asheville",
+      "description": "First craft brewery in Asheville",
+      "partnerLink": "https://www.opentable.com/highland-brewing",
+      "partnerName": "OpenTable"
+    }
+  ]
+}

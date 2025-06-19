@@ -1,0 +1,38 @@
+{
+  "name": "Great Smoky Mountains Adventure",
+  "activity": "hiking",
+  "city": "Gatlinburg, TN",
+  "description": "Discover America's most visited national park with misty mountains, diverse wildlife, and Appalachian heritage.",
+  "schedule": [
+    {
+      "time": "7:30 AM",
+      "activity": "Laurel Falls Trail",
+      "location": "Great Smoky Mountains National Park",
+      "description": "Easy 2.6-mile paved trail to 80-foot waterfall",
+      "partnerLink": "https://www.alltrails.com/trail/us/tennessee/laurel-falls-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "11:00 AM",
+      "activity": "Cataract Falls",
+      "location": "Great Smoky Mountains National Park",
+      "description": "Moderate 1-mile hike to scenic waterfall",
+      "partnerLink": "https://www.alltrails.com/trail/us/tennessee/cataract-falls-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "1:30 PM",
+      "activity": "Lunch at The Peddler Steakhouse",
+      "location": "Gatlinburg",
+      "description": "Riverside dining with mountain views",
+      "partnerLink": "https://www.opentable.com/the-peddler-steakhouse",
+      "partnerName": "OpenTable"
+    },
+    {
+      "time": "4:00 PM",
+      "activity": "Gatlinburg SkyBridge",
+      "location": "Gatlinburg",
+      "description": "Longest suspension bridge in North America"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "name": "Avon Colorado 3-Day Adventure",
+  "activity": "hiking",
+  "city": "Avon, CO",
+  "description": "Experience the best of Colorado's high country with scenic hikes, craft breweries, local cuisine, and iconic attractions in the beautiful Vail Valley.",
+  "schedule": [
+    {
+      "time": "8:00 AM",
+      "activity": "Nottingham Lake Trail",
+      "location": "Avon Recreation Center",
+      "description": "Easy 1.5-mile loop around scenic lake",
+      "partnerLink": "https://www.alltrails.com/trail/us/colorado/nottingham-lake-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "11:00 AM",
+      "activity": "Beaver Creek Hiking",
+      "location": "Beaver Creek Resort",
+      "description": "Moderate 4.2-mile trail with mountain views",
+      "partnerLink": "https://www.alltrails.com/trail/us/colorado/beaver-creek-hiking-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "1:00 PM",
+      "activity": "Lunch at Northside Kitchen",
+      "location": "Avon",
+      "description": "Local favorite with mountain views",
+      "partnerLink": "https://www.opentable.com/northside-kitchen-avon",
+      "partnerName": "OpenTable"
+    },
+    {
+      "time": "6:00 PM",
+      "activity": "Craft Beer at Crazy Mountain Brewing",
+      "location": "Edwards",
+      "description": "Local brewery with outdoor seating",
+      "partnerLink": "https://www.opentable.com/crazy-mountain-brewing",
+      "partnerName": "OpenTable"
+    },
+    {
+      "time": "9:00 AM",
+      "activity": "Eagle River Trail",
+      "location": "Eagle River Park",
+      "description": "Easy 2.8-mile riverside walk",
+      "partnerLink": "https://www.alltrails.com/trail/us/colorado/eagle-river-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "12:30 PM",
+      "activity": "Bison Burgers at The Dusty Boot",
+      "location": "Vail",
+      "description": "Famous for their Colorado bison burgers",
+      "partnerLink": "https://www.opentable.com/the-dusty-boot-vail",
+      "partnerName": "OpenTable"
+    },
+    {
+      "time": "3:00 PM",
+      "activity": "Vail Village Exploration",
+      "location": "Vail Village",
+      "description": "Iconic alpine village and tourist attraction"
+    },
+    {
+      "time": "7:00 PM",
+      "activity": "Dinner at Flame Restaurant",
+      "location": "Vail",
+      "description": "Upscale dining with mountain cuisine",
+      "partnerLink": "https://www.opentable.com/flame-restaurant-vail",
+      "partnerName": "OpenTable"
+    },
+    {
+      "time": "8:30 AM",
+      "activity": "Piney River Falls",
+      "location": "Piney Lake",
+      "description": "Moderate 5.4-mile hike to stunning waterfall",
+      "partnerLink": "https://www.alltrails.com/trail/us/colorado/piney-river-falls-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "1:00 PM",
+      "activity": "Lunch at Minturn Saloon",
+      "location": "Minturn",
+      "description": "Historic saloon with hearty mountain fare",
+      "partnerLink": "https://www.opentable.com/minturn-saloon",
+      "partnerName": "OpenTable"
+    },
+    {
+      "time": "4:00 PM",
+      "activity": "Betty Ford Alpine Gardens",
+      "location": "Vail",
+      "description": "Must-see attraction: highest botanical garden in North America"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "name": "Lake Tahoe Alpine Adventure",
+  "activity": "hiking",
+  "city": "South Lake Tahoe, CA",
+  "description": "Discover the crystal-clear waters and mountain peaks surrounding America's largest alpine lake.",
+  "schedule": [
+    {
+      "time": "7:30 AM",
+      "activity": "Eagle Falls and Eagle Lake",
+      "location": "Emerald Bay",
+      "description": "Moderate 2-mile hike to alpine lake",
+      "partnerLink": "https://www.alltrails.com/trail/us/california/eagle-falls-and-eagle-lake-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "12:00 PM",
+      "activity": "Lunch at Evan's American Gourmet Cafe",
+      "location": "South Lake Tahoe",
+      "description": "Local cafe with lake views",
+      "partnerLink": "https://www.opentable.com/evans-american-gourmet-cafe",
+      "partnerName": "OpenTable"
+    },
+    {
+      "time": "3:00 PM",
+      "activity": "Emerald Bay Overlook",
+      "location": "Highway 89",
+      "description": "Iconic viewpoint of Lake Tahoe's most photographed spot"
+    }
+  ]
+}

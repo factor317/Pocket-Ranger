@@ -1,0 +1,32 @@
+{
+  "name": "Glacier National Park Expedition",
+  "activity": "hiking",
+  "city": "West Glacier, MT",
+  "description": "Experience the crown jewel of the Rockies with pristine wilderness, alpine lakes, and dramatic mountain peaks.",
+  "schedule": [
+    {
+      "time": "8:00 AM",
+      "activity": "Hidden Lake Overlook",
+      "location": "Logan Pass",
+      "description": "Moderate 2.7-mile hike with stunning alpine views",
+      "partnerLink": "https://www.alltrails.com/trail/us/montana/hidden-lake-overlook-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "2:00 PM",
+      "activity": "Trail of the Cedars",
+      "location": "Avalanche Creek",
+      "description": "Easy 0.7-mile boardwalk through old-growth forest",
+      "partnerLink": "https://www.alltrails.com/trail/us/montana/trail-of-the-cedars",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "6:00 PM",
+      "activity": "Dinner at Belton Chalet",
+      "location": "West Glacier",
+      "description": "Historic lodge dining with mountain views",
+      "partnerLink": "https://www.opentable.com/belton-chalet",
+      "partnerName": "OpenTable"
+    }
+  ]
+}

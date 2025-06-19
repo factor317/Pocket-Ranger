@@ -1,0 +1,38 @@
+{
+  "name": "Moab Desert Adventure",
+  "activity": "hiking",
+  "city": "Moab, UT",
+  "description": "Explore the stunning red rock landscapes of Moab with iconic arches, canyons, and desert trails.",
+  "schedule": [
+    {
+      "time": "7:00 AM",
+      "activity": "Delicate Arch Hike",
+      "location": "Arches National Park",
+      "description": "Iconic 3-mile hike to Utah's most famous arch",
+      "partnerLink": "https://www.alltrails.com/trail/us/utah/delicate-arch-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "11:00 AM",
+      "activity": "Windows Section",
+      "location": "Arches National Park",
+      "description": "Easy 1-mile walk to massive stone arches",
+      "partnerLink": "https://www.alltrails.com/trail/us/utah/the-windows-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "1:00 PM",
+      "activity": "Lunch at Pasta Jay's",
+      "location": "Moab",
+      "description": "Local favorite Italian restaurant",
+      "partnerLink": "https://www.opentable.com/pasta-jays-moab",
+      "partnerName": "OpenTable"
+    },
+    {
+      "time": "6:00 PM",
+      "activity": "Sunset at Courthouse Towers",
+      "location": "Arches National Park",
+      "description": "Perfect sunset viewing spot"
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Alert,
   Linking,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, MapPin, Clock, ExternalLink } from 'lucide-react-native';
@@ -24,6 +25,7 @@ interface ScheduleItem {
   time: string;
   activity: string;
   location: string;
+  description?: string;
   partnerLink?: string;
   partnerName?: string;
 }
@@ -32,6 +34,7 @@ export default function ExploreScreen() {
   const [userInput, setUserInput] = useState('');
   const [recommendation, setRecommendation] = useState<LocationRecommendation | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   const handleSearch = async () => {
     if (!userInput.trim()) {
@@ -40,6 +43,8 @@ export default function ExploreScreen() {
     }
 
     setLoading(true);
+    setIsExpanded(false); // Collapse the input area
+    
     try {
       const response = await fetch('/api/pocPlan', {
         method: 'POST',
@@ -58,6 +63,7 @@ export default function ExploreScreen() {
     } catch (error) {
       Alert.alert('Error', 'Failed to get recommendation. Please try again.');
       console.error('Search error:', error);
+      setIsExpanded(true); // Re-expand on error
     } finally {
       setLoading(false);
     }
@@ -76,26 +82,51 @@ export default function ExploreScreen() {
     }
   };
 
+  const handleNewSearch = () => {
+    setRecommendation(null);
+    setIsExpanded(true);
+    setUserInput('');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Pocket Ranger</Text>
-          <Text style={styles.subtitle}>Your outdoor adventure companion</Text>
+        {/* Header with Background Image */}
+        <View style={styles.headerContainer}>
+          <Image
+            source={{ uri: 'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2' }}
+            style={styles.backgroundImage}
+          />
+          <View style={styles.headerOverlay}>
+            <Text style={styles.title}>Pocket Ranger</Text>
+            <Text style={styles.subtitle}>Your outdoor adventure companion</Text>
+          </View>
         </View>
 
-        <View style={styles.searchContainer}>
-          <View style={styles.inputContainer}>
+        {/* Search Container */}
+        <View style={[
+          styles.searchContainer,
+          isExpanded ? styles.searchContainerExpanded : styles.searchContainerCollapsed
+        ]}>
+          <View style={[
+            styles.inputContainer,
+            isExpanded ? styles.inputContainerExpanded : styles.inputContainerCollapsed
+          ]}>
             <Search size={20} color="#6B8E23" style={styles.searchIcon} />
             <TextInput
-              style={styles.textInput}
-              placeholder="What's your next adventure? (e.g., hiking near Madison)"
+              style={[
+                styles.textInput,
+                isExpanded ? styles.textInputExpanded : styles.textInputCollapsed
+              ]}
+              placeholder="What's your next adventure? (e.g., hiking for 3 days near Avon Colorado, suggest hikes under 6 miles and at least one under 2. suggest breweries for 1 night, a place with bison burgers and a tourist must see attraction and build the itinerary)"
               value={userInput}
               onChangeText={setUserInput}
               placeholderTextColor="#8B9DC3"
-              multiline
+              multiline={isExpanded}
+              numberOfLines={isExpanded ? 8 : 1}
             />
           </View>
+          
           <TouchableOpacity
             style={[styles.searchButton, loading && styles.searchButtonDisabled]}
             onPress={handleSearch}
@@ -105,6 +136,15 @@ export default function ExploreScreen() {
               {loading ? 'Planning...' : 'Find Adventure'}
             </Text>
           </TouchableOpacity>
+
+          {recommendation && (
+            <TouchableOpacity
+              style={styles.newSearchButton}
+              onPress={handleNewSearch}
+            >
+              <Text style={styles.newSearchButtonText}>New Search</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {recommendation && (
@@ -135,6 +175,9 @@ export default function ExploreScreen() {
                   <View style={styles.scheduleContent}>
                     <Text style={styles.scheduleActivity}>{item.activity}</Text>
                     <Text style={styles.scheduleLocation}>{item.location}</Text>
+                    {item.description && (
+                      <Text style={styles.scheduleDescription}>{item.description}</Text>
+                    )}
                     {item.partnerLink && (
                       <TouchableOpacity
                         style={styles.partnerLink}
@@ -165,45 +208,84 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  header: {
-    padding: 24,
+  headerContainer: {
+    height: 200,
+    position: 'relative',
+  },
+  backgroundImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  headerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 24,
   },
   title: {
     fontSize: 32,
     fontFamily: 'Inter-Bold',
-    color: '#6B8E23',
+    color: '#FFFFFF',
     marginBottom: 8,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#8B9DC3',
+    color: '#FFFFFF',
     textAlign: 'center',
+    opacity: 0.9,
   },
   searchContainer: {
-    padding: 24,
-    paddingTop: 0,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  searchContainerExpanded: {
+    minHeight: '60vh', // 3/4 of remaining screen after header
+  },
+  searchContainerCollapsed: {
+    minHeight: 'auto',
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 2,
     borderColor: '#BFD3C1',
+    position: 'relative',
+  },
+  inputContainerExpanded: {
+    minHeight: 300,
+    alignItems: 'flex-start',
+  },
+  inputContainerCollapsed: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 56,
   },
   searchIcon: {
+    alignSelf: 'flex-start',
     marginTop: 2,
     marginRight: 12,
   },
   textInput: {
-    flex: 1,
     fontSize: 16,
     fontFamily: 'Inter-Regular',
     color: '#333333',
+  },
+  textInputExpanded: {
+    position: 'absolute',
+    top: 16,
+    left: 48,
+    right: 16,
+    bottom: 16,
+    textAlignVertical: 'top',
+  },
+  textInputCollapsed: {
+    flex: 1,
     minHeight: 24,
   },
   searchButton: {
@@ -211,6 +293,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
+    marginBottom: 12,
   },
   searchButtonDisabled: {
     backgroundColor: '#8B9DC3',
@@ -219,6 +302,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
     color: '#FFFFFF',
+  },
+  newSearchButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#6B8E23',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+  },
+  newSearchButtonText: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#6B8E23',
   },
   recommendationContainer: {
     margin: 24,
@@ -305,7 +401,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter-Regular',
     color: '#666666',
+    marginBottom: 4,
+  },
+  scheduleDescription: {
+    fontSize: 13,
+    fontFamily: 'Inter-Regular',
+    color: '#888888',
     marginBottom: 8,
+    fontStyle: 'italic',
   },
   partnerLink: {
     flexDirection: 'row',

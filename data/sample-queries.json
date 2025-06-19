@@ -1,0 +1,54 @@
+{
+  "queries": [
+    {
+      "id": 1,
+      "query": "hiking for 3 days near Avon Colorado, suggest hikes under 6 miles and at least one under 2. suggest breweries for 1 night, a place with bison burgers and a tourist must see attraction and build the itinerary",
+      "adventure_file": "avon-colorado.json"
+    },
+    {
+      "id": 2,
+      "query": "weekend adventure in Moab Utah with iconic red rock hiking and desert exploration",
+      "adventure_file": "moab-utah.json"
+    },
+    {
+      "id": 3,
+      "query": "Glacier National Park hiking trip with alpine lakes and mountain views",
+      "adventure_file": "glacier-montana.json"
+    },
+    {
+      "id": 4,
+      "query": "Lake Tahoe hiking and scenic drives around the alpine lake",
+      "adventure_file": "lake-tahoe.json"
+    },
+    {
+      "id": 5,
+      "query": "Sedona Arizona red rock hiking and spiritual energy vortex experience",
+      "adventure_file": "sedona-arizona.json"
+    },
+    {
+      "id": 6,
+      "query": "Asheville North Carolina Blue Ridge Mountains hiking with craft brewery tour",
+      "adventure_file": "asheville-north-carolina.json"
+    },
+    {
+      "id": 7,
+      "query": "Olympic Peninsula Washington rainforest hiking and coastal exploration",
+      "adventure_file": "olympic-washington.json"
+    },
+    {
+      "id": 8,
+      "query": "Acadia National Park Maine coastal hiking with lobster dining experience",
+      "adventure_file": "acadia-maine.json"
+    },
+    {
+      "id": 9,
+      "query": "Big Sur California coastal hiking with dramatic ocean views and redwood forests",
+      "adventure_file": "big-sur-california.json"
+    },
+    {
+      "id": 10,
+      "query": "Great Smoky Mountains Tennessee waterfall hiking and mountain culture experience",
+      "adventure_file": "great-smoky-mountains.json"
+    }
+  ]
+}

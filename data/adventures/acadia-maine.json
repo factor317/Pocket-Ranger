@@ -1,0 +1,32 @@
+{
+  "name": "Acadia National Park Coastal Adventure",
+  "activity": "hiking",
+  "city": "Bar Harbor, ME",
+  "description": "Experience rugged Atlantic coastline, granite peaks, and pristine lakes in Maine's only national park.",
+  "schedule": [
+    {
+      "time": "7:00 AM",
+      "activity": "Cadillac Mountain Summit",
+      "location": "Acadia National Park",
+      "description": "Easy 0.3-mile walk to highest point on East Coast",
+      "partnerLink": "https://www.alltrails.com/trail/us/maine/cadillac-mountain-summit-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "10:00 AM",
+      "activity": "Ocean Path",
+      "location": "Acadia National Park",
+      "description": "Easy 4.4-mile coastal walk with ocean views",
+      "partnerLink": "https://www.alltrails.com/trail/us/maine/ocean-path-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "1:00 PM",
+      "activity": "Lobster Lunch at Jordan Pond House",
+      "location": "Acadia National Park",
+      "description": "Historic restaurant famous for popovers and lobster",
+      "partnerLink": "https://www.opentable.com/jordan-pond-house",
+      "partnerName": "OpenTable"
+    }
+  ]
+}

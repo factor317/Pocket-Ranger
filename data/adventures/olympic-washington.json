@@ -1,0 +1,32 @@
+{
+  "name": "Olympic Peninsula Wilderness",
+  "activity": "hiking",
+  "city": "Port Angeles, WA",
+  "description": "Discover temperate rainforests, rugged coastlines, and snow-capped peaks in this diverse ecosystem.",
+  "schedule": [
+    {
+      "time": "8:30 AM",
+      "activity": "Hurricane Ridge Trail",
+      "location": "Olympic National Park",
+      "description": "Easy 1.6-mile trail with panoramic mountain views",
+      "partnerLink": "https://www.alltrails.com/trail/us/washington/hurricane-ridge-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "2:00 PM",
+      "activity": "Marymere Falls",
+      "location": "Lake Crescent",
+      "description": "Easy 1.8-mile hike through old-growth forest",
+      "partnerLink": "https://www.alltrails.com/trail/us/washington/marymere-falls-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "6:00 PM",
+      "activity": "Dinner at Lake Crescent Lodge",
+      "location": "Lake Crescent",
+      "description": "Historic lodge dining on pristine mountain lake",
+      "partnerLink": "https://www.opentable.com/lake-crescent-lodge",
+      "partnerName": "OpenTable"
+    }
+  ]
+}

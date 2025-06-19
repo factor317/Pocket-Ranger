@@ -1,0 +1,32 @@
+{
+  "name": "Sedona Red Rock Experience",
+  "activity": "hiking",
+  "city": "Sedona, AZ",
+  "description": "Explore the mystical red rock formations and energy vortexes of Arizona's most beautiful desert landscape.",
+  "schedule": [
+    {
+      "time": "7:00 AM",
+      "activity": "Cathedral Rock Trail",
+      "location": "Red Rock Crossing",
+      "description": "Challenging 1.2-mile climb to iconic red rock formation",
+      "partnerLink": "https://www.alltrails.com/trail/us/arizona/cathedral-rock-trail",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "11:00 AM",
+      "activity": "Bell Rock Pathway",
+      "location": "Village of Oak Creek",
+      "description": "Easy 3.6-mile walk around famous bell-shaped butte",
+      "partnerLink": "https://www.alltrails.com/trail/us/arizona/bell-rock-pathway",
+      "partnerName": "AllTrails"
+    },
+    {
+      "time": "1:30 PM",
+      "activity": "Lunch at Elote Cafe",
+      "location": "Sedona",
+      "description": "Award-winning Mexican cuisine",
+      "partnerLink": "https://www.opentable.com/elote-cafe-sedona",
+      "partnerName": "OpenTable"
+    }
+  ]
+}
