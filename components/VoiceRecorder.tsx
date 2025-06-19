@@ -63,6 +63,36 @@ export default function VoiceRecorder({
     }
   };
 
+  const getRecordingOptions = () => {
+    if (Platform.OS === 'web') {
+      return {
+        web: {
+          mimeType: 'audio/webm;codecs=opus',
+          bitsPerSecond: 128000,
+        },
+      };
+    } else {
+      return {
+        android: {
+          extension: '.m4a',
+          outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_MPEG_4,
+          audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC,
+          sampleRate: 44100,
+          numberOfChannels: 2,
+          bitRate: 128000,
+        },
+        ios: {
+          extension: '.m4a',
+          outputFormat: Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_MPEG4AAC,
+          audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH,
+          sampleRate: 44100,
+          numberOfChannels: 2,
+          bitRate: 128000,
+        },
+      };
+    }
+  };
+
   const startRecording = async () => {
     if (!hasPermission) {
       Alert.alert('Permission Required', 'Please grant microphone permission to use voice input.');
@@ -78,31 +108,7 @@ export default function VoiceRecorder({
       }
 
       const recording = new Audio.Recording();
-      await recording.prepareToRecordAsync({
-        android: {
-          extension: '.wav',
-          outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_DEFAULT,
-          audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_DEFAULT,
-          sampleRate: 16000,
-          numberOfChannels: 1,
-          bitRate: 128000,
-        },
-        ios: {
-          extension: '.wav',
-          outputFormat: Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_LINEARPCM,
-          audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH,
-          sampleRate: 16000,
-          numberOfChannels: 1,
-          bitRate: 128000,
-          linearPCMBitDepth: 16,
-          linearPCMIsBigEndian: false,
-          linearPCMIsFloat: false,
-        },
-        web: {
-          mimeType: 'audio/wav',
-          bitsPerSecond: 128000,
-        },
-      });
+      await recording.prepareToRecordAsync(getRecordingOptions());
 
       await recording.startAsync();
       recordingRef.current = recording;
@@ -167,7 +173,7 @@ export default function VoiceRecorder({
       const audioBlob = await response.blob();
       const audioBase64 = await blobToBase64(audioBlob);
 
-      // Send to BorgCloud for speech-to-text
+      // Send to transcription service
       const transcription = await transcribeAudio(audioBase64);
       
       if (transcription) {
@@ -188,7 +194,7 @@ export default function VoiceRecorder({
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64 = reader.result as string;
-        resolve(base64.split(',')[1]); // Remove data:audio/wav;base64, prefix
+        resolve(base64.split(',')[1]); // Remove data URL prefix
       };
       reader.onerror = reject;
       reader.readAsDataURL(blob);
@@ -204,7 +210,7 @@ export default function VoiceRecorder({
         },
         body: JSON.stringify({
           audio: audioBase64,
-          format: 'wav',
+          format: Platform.OS === 'web' ? 'webm' : 'm4a',
         }),
       });
 
@@ -293,11 +299,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#6B8E23',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)',
+      },
+    }),
   },
   recordButtonActive: {
     backgroundColor: '#D4A5A5',
