@@ -245,7 +245,7 @@ export default function VoiceRecorder({
     return (
       <View style={styles.container}>
         <TouchableOpacity style={styles.permissionButton} onPress={requestPermissions}>
-          <MicOff size={24} color="#D4A5A5" />
+          <MicOff size={24} color="#688273" />
           <Text style={styles.permissionText}>Grant Microphone Permission</Text>
         </TouchableOpacity>
       </View>
@@ -269,9 +269,9 @@ export default function VoiceRecorder({
               <Text style={styles.processingText}>Processing...</Text>
             </View>
           ) : isRecording ? (
-            <Square size={24} color="#FFFFFF" fill="#FFFFFF" />
+            <Square size={24} color="#ffffff" fill="#ffffff" />
           ) : (
-            <Mic size={24} color="#FFFFFF" />
+            <Mic size={24} color="#ffffff" />
           )}
         </TouchableOpacity>
       </Animated.View>
@@ -296,59 +296,59 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#6B8E23',
+    backgroundColor: '#94e0b2',
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
+        shadowOpacity: 0.15,
         shadowRadius: 4,
       },
       android: {
         elevation: 4,
       },
       web: {
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
       },
     }),
   },
   recordButtonActive: {
-    backgroundColor: '#D4A5A5',
+    backgroundColor: '#f87171',
   },
   recordButtonDisabled: {
-    backgroundColor: '#8B9DC3',
+    backgroundColor: '#d1d5db',
     opacity: 0.6,
   },
   instructionText: {
     marginTop: 12,
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#666666',
+    color: '#688273',
     textAlign: 'center',
+    fontWeight: '500',
   },
   permissionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#f1f4f2',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#D4A5A5',
+    borderColor: '#e8f0ea',
   },
   permissionText: {
     marginLeft: 8,
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#666666',
+    color: '#688273',
+    fontWeight: '500',
   },
   processingIndicator: {
     alignItems: 'center',
   },
   processingText: {
     fontSize: 10,
-    fontFamily: 'Inter-SemiBold',
-    color: '#FFFFFF',
+    fontWeight: '600',
+    color: '#ffffff',
   },
 });

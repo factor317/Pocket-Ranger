@@ -12,7 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, MapPin, Clock, ExternalLink, MessageCircle } from 'lucide-react-native';
+import { Search, MapPin, Clock, ExternalLink, MessageCircle, Mic } from 'lucide-react-native';
 import VoiceRecorder from '@/components/VoiceRecorder';
 import VoiceToggle from '@/components/VoiceToggle';
 
@@ -43,7 +43,6 @@ export default function ExploreScreen() {
   const [userInput, setUserInput] = useState('');
   const [recommendation, setRecommendation] = useState<LocationRecommendation | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(true);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const [aiResponse, setAiResponse] = useState<string>('');
@@ -58,7 +57,6 @@ export default function ExploreScreen() {
     }
 
     setLoading(true);
-    setIsExpanded(false);
     
     try {
       // First, process with Groq AI for conversation
@@ -95,7 +93,6 @@ export default function ExploreScreen() {
     } catch (error) {
       Alert.alert('Error', 'Failed to get recommendation. Please try again.');
       console.error('Search error:', error);
-      setIsExpanded(true);
     } finally {
       setLoading(false);
     }
@@ -154,7 +151,6 @@ export default function ExploreScreen() {
 
   const handleNewSearch = () => {
     setRecommendation(null);
-    setIsExpanded(true);
     setUserInput('');
     setShowConversation(false);
     setAiResponse('');
@@ -165,7 +161,7 @@ export default function ExploreScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header with Background Image */}
         <View style={styles.headerContainer}>
@@ -173,27 +169,51 @@ export default function ExploreScreen() {
             source={{ uri: 'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2' }}
             style={styles.backgroundImage}
           />
-          <View style={styles.headerOverlay}>
-            <Text style={styles.title}>Pocket Ranger</Text>
-            <Text style={styles.subtitle}>Your voice-powered adventure companion</Text>
-          </View>
         </View>
 
-        {/* Search Container */}
-        <View style={[
-          styles.searchContainer,
-          isExpanded ? styles.searchContainerExpanded : styles.searchContainerCollapsed
-        ]}>
-          {/* Voice/Text Toggle */}
-          <VoiceToggle
-            isVoiceMode={isVoiceMode}
-            onToggle={setIsVoiceMode}
-            disabled={loading}
-          />
+        {/* Main Content */}
+        <View style={styles.mainContent}>
+          <Text style={styles.title}>Plan your next adventure</Text>
+          
+          {/* Input Section */}
+          <View style={styles.inputSection}>
+            <TextInput
+              style={styles.textArea}
+              placeholder="What do you want to do?"
+              placeholderTextColor="#688273"
+              value={userInput}
+              onChangeText={setUserInput}
+              multiline
+              numberOfLines={6}
+              textAlignVertical="top"
+            />
+          </View>
 
-          {isVoiceMode ? (
-            /* Voice Input */
-            <View style={styles.voiceInputContainer}>
+          {/* Action Buttons */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.recordButton]}
+              onPress={() => setIsVoiceMode(!isVoiceMode)}
+              disabled={loading}
+            >
+              <Mic size={16} color="#121714" />
+              <Text style={styles.recordButtonText}>Record</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.actionButton, styles.planButton]}
+              onPress={() => handleSearch()}
+              disabled={loading || !userInput.trim()}
+            >
+              <Text style={styles.planButtonText}>
+                {loading ? 'Planning...' : 'Plan'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Voice Recording Section */}
+          {isVoiceMode && (
+            <View style={styles.voiceSection}>
               <VoiceRecorder
                 onTranscriptionComplete={handleVoiceTranscription}
                 onError={handleVoiceError}
@@ -206,293 +226,234 @@ export default function ExploreScreen() {
                 </View>
               ) : null}
             </View>
-          ) : (
-            /* Text Input */
-            <View style={[
-              styles.inputContainer,
-              isExpanded ? styles.inputContainerExpanded : styles.inputContainerCollapsed
-            ]}>
-              <Search size={20} color="#6B8E23" style={styles.searchIcon} />
-              <TextInput
-                style={[
-                  styles.textInput,
-                  isExpanded ? styles.textInputExpanded : styles.textInputCollapsed
-                ]}
-                placeholder="What's your next adventure? Try: 'I want to go hiking this Saturday, somewhere with a waterfall, not too far from Brookfield'"
-                value={userInput}
-                onChangeText={setUserInput}
-                placeholderTextColor="#8B9DC3"
-                multiline={isExpanded}
-                numberOfLines={isExpanded ? 6 : 1}
-              />
-            </View>
-          )}
-          
-          {!isVoiceMode && (
-            <TouchableOpacity
-              style={[styles.searchButton, loading && styles.searchButtonDisabled]}
-              onPress={() => handleSearch()}
-              disabled={loading}
-            >
-              <Text style={styles.searchButtonText}>
-                {loading ? 'Planning...' : 'Find Adventure'}
-              </Text>
-            </TouchableOpacity>
           )}
 
-          {(recommendation || aiResponse) && (
-            <TouchableOpacity
-              style={styles.newSearchButton}
-              onPress={handleNewSearch}
-            >
-              <Text style={styles.newSearchButtonText}>New Search</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* AI Response */}
-        {aiResponse && (
-          <View style={styles.aiResponseContainer}>
-            <View style={styles.aiResponseHeader}>
-              <MessageCircle size={20} color="#6B8E23" />
-              <Text style={styles.aiResponseTitle}>Pocket Ranger Assistant</Text>
-              {conversation.length > 2 && (
-                <TouchableOpacity onPress={toggleConversation}>
-                  <Text style={styles.conversationToggle}>
-                    {showConversation ? 'Hide' : 'Show'} Conversation
-                  </Text>
-                </TouchableOpacity>
+          {/* AI Response */}
+          {aiResponse && (
+            <View style={styles.aiResponseContainer}>
+              <View style={styles.aiResponseHeader}>
+                <MessageCircle size={20} color="#121714" />
+                <Text style={styles.aiResponseTitle}>Pocket Ranger Assistant</Text>
+                {conversation.length > 2 && (
+                  <TouchableOpacity onPress={toggleConversation}>
+                    <Text style={styles.conversationToggle}>
+                      {showConversation ? 'Hide' : 'Show'} Conversation
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+              <Text style={styles.aiResponseText}>{aiResponse}</Text>
+              
+              {showConversation && conversation.length > 2 && (
+                <View style={styles.conversationContainer}>
+                  <Text style={styles.conversationTitle}>Conversation History</Text>
+                  {conversation.slice(0, -2).map((message, index) => (
+                    <View key={index} style={[
+                      styles.conversationMessage,
+                      message.role === 'user' ? styles.userMessage : styles.assistantMessage
+                    ]}>
+                      <Text style={[
+                        styles.conversationMessageText,
+                        message.role === 'user' ? styles.userMessageText : styles.assistantMessageText
+                      ]}>
+                        {message.content}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
               )}
             </View>
-            <Text style={styles.aiResponseText}>{aiResponse}</Text>
-            
-            {showConversation && conversation.length > 2 && (
-              <View style={styles.conversationContainer}>
-                <Text style={styles.conversationTitle}>Conversation History</Text>
-                {conversation.slice(0, -2).map((message, index) => (
-                  <View key={index} style={[
-                    styles.conversationMessage,
-                    message.role === 'user' ? styles.userMessage : styles.assistantMessage
-                  ]}>
-                    <Text style={[
-                      styles.conversationMessageText,
-                      message.role === 'user' ? styles.userMessageText : styles.assistantMessageText
-                    ]}>
-                      {message.content}
-                    </Text>
+          )}
+
+          {/* Adventure Recommendation */}
+          {recommendation && (
+            <View style={styles.recommendationContainer}>
+              <View style={styles.recommendationHeader}>
+                <MapPin size={24} color="#121714" />
+                <View style={styles.recommendationHeaderText}>
+                  <Text style={styles.recommendationTitle}>{recommendation.name}</Text>
+                  <Text style={styles.recommendationLocation}>{recommendation.city}</Text>
+                </View>
+              </View>
+              
+              <Text style={styles.recommendationDescription}>
+                {recommendation.description}
+              </Text>
+
+              <View style={styles.scheduleContainer}>
+                <View style={styles.scheduleHeader}>
+                  <Clock size={20} color="#121714" />
+                  <Text style={styles.scheduleTitle}>Your Itinerary</Text>
+                </View>
+                
+                {recommendation.schedule.map((item, index) => (
+                  <View key={index} style={styles.scheduleItem}>
+                    <View style={styles.scheduleTime}>
+                      <Text style={styles.scheduleTimeText}>{item.time}</Text>
+                    </View>
+                    <View style={styles.scheduleContent}>
+                      <Text style={styles.scheduleActivity}>{item.activity}</Text>
+                      <Text style={styles.scheduleLocation}>{item.location}</Text>
+                      {item.description && (
+                        <Text style={styles.scheduleDescription}>{item.description}</Text>
+                      )}
+                      {item.partnerLink && (
+                        <TouchableOpacity
+                          style={styles.partnerLink}
+                          onPress={() => openPartnerLink(item.partnerLink!)}
+                        >
+                          <Text style={styles.partnerLinkText}>
+                            View on {item.partnerName}
+                          </Text>
+                          <ExternalLink size={14} color="#94e0b2" />
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   </View>
                 ))}
               </View>
-            )}
-          </View>
-        )}
 
-        {/* Adventure Recommendation */}
-        {recommendation && (
-          <View style={styles.recommendationContainer}>
-            <View style={styles.recommendationHeader}>
-              <MapPin size={24} color="#6B8E23" />
-              <View style={styles.recommendationHeaderText}>
-                <Text style={styles.recommendationTitle}>{recommendation.name}</Text>
-                <Text style={styles.recommendationLocation}>{recommendation.city}</Text>
-              </View>
+              {/* New Search Button */}
+              <TouchableOpacity
+                style={styles.newSearchButton}
+                onPress={handleNewSearch}
+              >
+                <Text style={styles.newSearchButtonText}>Plan Another Adventure</Text>
+              </TouchableOpacity>
             </View>
-            
-            <Text style={styles.recommendationDescription}>
-              {recommendation.description}
-            </Text>
-
-            <View style={styles.scheduleContainer}>
-              <View style={styles.scheduleHeader}>
-                <Clock size={20} color="#6B8E23" />
-                <Text style={styles.scheduleTitle}>Your Itinerary</Text>
-              </View>
-              
-              {recommendation.schedule.map((item, index) => (
-                <View key={index} style={styles.scheduleItem}>
-                  <View style={styles.scheduleTime}>
-                    <Text style={styles.scheduleTimeText}>{item.time}</Text>
-                  </View>
-                  <View style={styles.scheduleContent}>
-                    <Text style={styles.scheduleActivity}>{item.activity}</Text>
-                    <Text style={styles.scheduleLocation}>{item.location}</Text>
-                    {item.description && (
-                      <Text style={styles.scheduleDescription}>{item.description}</Text>
-                    )}
-                    {item.partnerLink && (
-                      <TouchableOpacity
-                        style={styles.partnerLink}
-                        onPress={() => openPartnerLink(item.partnerLink!)}
-                      >
-                        <Text style={styles.partnerLinkText}>
-                          View on {item.partnerName}
-                        </Text>
-                        <ExternalLink size={14} color="#6B8E23" />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
+          )}
+        </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F6F2D7',
+    backgroundColor: '#ffffff',
   },
   scrollView: {
     flex: 1,
   },
   headerContainer: {
-    height: 200,
+    height: 320,
     position: 'relative',
+    marginHorizontal: Platform.OS === 'web' ? 16 : 0,
+    marginTop: Platform.OS === 'web' ? 12 : 0,
+    borderRadius: Platform.OS === 'web' ? 12 : 0,
+    overflow: 'hidden',
   },
   backgroundImage: {
     width: '100%',
     height: '100%',
     position: 'absolute',
   },
-  headerOverlay: {
+  mainContent: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
+    backgroundColor: '#ffffff',
   },
   title: {
-    fontSize: 32,
-    fontFamily: 'Inter-Bold',
-    color: '#FFFFFF',
-    marginBottom: 8,
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#121714',
     textAlign: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 12,
+    letterSpacing: -0.5,
   },
-  subtitle: {
+  inputSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  textArea: {
+    backgroundColor: '#f1f4f2',
+    borderRadius: 12,
+    padding: 16,
     fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    color: '#FFFFFF',
-    textAlign: 'center',
-    opacity: 0.9,
+    color: '#121714',
+    minHeight: 144,
+    fontWeight: '400',
+    lineHeight: 22,
+    borderWidth: 0,
   },
-  searchContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 24,
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    justifyContent: 'center',
+    maxWidth: 480,
+    alignSelf: 'center',
+    width: '100%',
   },
-  searchContainerExpanded: {
-    minHeight: 400,
-  },
-  searchContainerCollapsed: {
-    minHeight: 'auto',
-  },
-  voiceInputContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: '#BFD3C1',
+  actionButton: {
+    flex: 1,
+    minWidth: 84,
+    height: 40,
+    borderRadius: 20,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  recordButton: {
+    backgroundColor: '#f1f4f2',
+  },
+  recordButtonText: {
+    color: '#121714',
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.15,
+  },
+  planButton: {
+    backgroundColor: '#94e0b2',
+  },
+  planButtonText: {
+    color: '#121714',
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.15,
+  },
+  voiceSection: {
+    backgroundColor: '#f8faf9',
+    marginHorizontal: 16,
+    marginVertical: 12,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e8f0ea',
   },
   transcriptionContainer: {
     marginTop: 16,
     padding: 12,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#ffffff',
     borderRadius: 8,
     width: '100%',
+    borderWidth: 1,
+    borderColor: '#e8f0ea',
   },
   transcriptionLabel: {
     fontSize: 12,
-    fontFamily: 'Inter-SemiBold',
-    color: '#6B8E23',
+    fontWeight: '600',
+    color: '#688273',
     marginBottom: 4,
   },
   transcriptionText: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#333333',
+    color: '#121714',
     fontStyle: 'italic',
-  },
-  inputContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: '#BFD3C1',
-    position: 'relative',
-  },
-  inputContainerExpanded: {
-    minHeight: 200,
-    alignItems: 'flex-start',
-  },
-  inputContainerCollapsed: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 56,
-  },
-  searchIcon: {
-    alignSelf: 'flex-start',
-    marginTop: 2,
-    marginRight: 12,
-  },
-  textInput: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    color: '#333333',
-  },
-  textInputExpanded: {
-    position: 'absolute',
-    top: 16,
-    left: 48,
-    right: 16,
-    bottom: 16,
-    textAlignVertical: 'top',
-  },
-  textInputCollapsed: {
-    flex: 1,
-    minHeight: 24,
-  },
-  searchButton: {
-    backgroundColor: '#6B8E23',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  searchButtonDisabled: {
-    backgroundColor: '#8B9DC3',
-  },
-  searchButtonText: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: '#FFFFFF',
-  },
-  newSearchButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#6B8E23',
-    borderRadius: 12,
-    padding: 12,
-    alignItems: 'center',
-  },
-  newSearchButtonText: {
-    fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-    color: '#6B8E23',
+    lineHeight: 20,
   },
   aiResponseContainer: {
-    margin: 24,
-    marginTop: 0,
-    backgroundColor: '#E8F5E8',
+    margin: 16,
+    backgroundColor: '#f8faf9',
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#BFD3C1',
+    borderColor: '#e8f0ea',
   },
   aiResponseHeader: {
     flexDirection: 'row',
@@ -501,33 +462,33 @@ const styles = StyleSheet.create({
   },
   aiResponseTitle: {
     fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: '#6B8E23',
+    fontWeight: '600',
+    color: '#121714',
     marginLeft: 8,
     flex: 1,
   },
   conversationToggle: {
     fontSize: 12,
-    fontFamily: 'Inter-SemiBold',
-    color: '#6B8E23',
+    fontWeight: '600',
+    color: '#688273',
     textDecorationLine: 'underline',
   },
   aiResponseText: {
     fontSize: 15,
-    fontFamily: 'Inter-Regular',
-    color: '#333333',
+    color: '#121714',
     lineHeight: 22,
+    fontWeight: '400',
   },
   conversationContainer: {
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#BFD3C1',
+    borderTopColor: '#e8f0ea',
   },
   conversationTitle: {
     fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-    color: '#6B8E23',
+    fontWeight: '600',
+    color: '#688273',
     marginBottom: 12,
   },
   conversationMessage: {
@@ -536,45 +497,46 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   userMessage: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#ffffff',
     alignSelf: 'flex-end',
     maxWidth: '80%',
+    borderWidth: 1,
+    borderColor: '#e8f0ea',
   },
   assistantMessage: {
-    backgroundColor: '#F0F8F0',
+    backgroundColor: '#f1f4f2',
     alignSelf: 'flex-start',
     maxWidth: '80%',
   },
   conversationMessageText: {
     fontSize: 13,
-    fontFamily: 'Inter-Regular',
+    lineHeight: 18,
   },
   userMessageText: {
-    color: '#333333',
+    color: '#121714',
   },
   assistantMessageText: {
-    color: '#555555',
+    color: '#121714',
   },
   recommendationContainer: {
-    margin: 24,
-    marginTop: 0,
-    backgroundColor: '#FFFFFF',
+    margin: 16,
+    backgroundColor: '#ffffff',
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#E7C9A1',
+    borderColor: '#e8f0ea',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 4,
+        elevation: 2,
       },
       web: {
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
       },
     }),
   },
@@ -589,21 +551,22 @@ const styles = StyleSheet.create({
   },
   recommendationTitle: {
     fontSize: 20,
-    fontFamily: 'Inter-Bold',
-    color: '#333333',
+    fontWeight: '700',
+    color: '#121714',
+    lineHeight: 26,
   },
   recommendationLocation: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#8B9DC3',
+    color: '#688273',
     marginTop: 2,
+    fontWeight: '500',
   },
   recommendationDescription: {
     fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    color: '#666666',
+    color: '#121714',
     lineHeight: 24,
     marginBottom: 24,
+    fontWeight: '400',
   },
   scheduleContainer: {
     marginTop: 8,
@@ -615,8 +578,8 @@ const styles = StyleSheet.create({
   },
   scheduleTitle: {
     fontSize: 18,
-    fontFamily: 'Inter-SemiBold',
-    color: '#333333',
+    fontWeight: '600',
+    color: '#121714',
     marginLeft: 8,
   },
   scheduleItem: {
@@ -624,7 +587,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: '#f1f4f2',
   },
   scheduleTime: {
     width: 80,
@@ -632,13 +595,14 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   scheduleTimeText: {
-    fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-    color: '#6B8E23',
-    backgroundColor: '#BFD3C1',
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#121714',
+    backgroundColor: '#f1f4f2',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
+    textAlign: 'center',
   },
   scheduleContent: {
     flex: 1,
@@ -646,31 +610,45 @@ const styles = StyleSheet.create({
   },
   scheduleActivity: {
     fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: '#333333',
+    fontWeight: '600',
+    color: '#121714',
     marginBottom: 4,
+    lineHeight: 22,
   },
   scheduleLocation: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#666666',
+    color: '#688273',
     marginBottom: 4,
+    fontWeight: '500',
   },
   scheduleDescription: {
     fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#888888',
+    color: '#688273',
     marginBottom: 8,
     fontStyle: 'italic',
+    lineHeight: 18,
   },
   partnerLink: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
   },
   partnerLinkText: {
     fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-    color: '#6B8E23',
-    marginRight: 4,
+    fontWeight: '600',
+    color: '#94e0b2',
+  },
+  newSearchButton: {
+    backgroundColor: '#94e0b2',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  newSearchButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#121714',
+    letterSpacing: 0.15,
   },
 });

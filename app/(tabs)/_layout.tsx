@@ -1,52 +1,61 @@
 import { Tabs } from 'expo-router';
-import { Compass, User, Calendar, Settings } from 'lucide-react-native';
+import { Home, Search, MapTrifold, User } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#6B8E23',
-        tabBarInactiveTintColor: '#8B9DC3',
+        tabBarActiveTintColor: '#121714',
+        tabBarInactiveTintColor: '#688273',
         tabBarStyle: {
-          backgroundColor: '#F6F2D7',
-          borderTopColor: '#E7C9A1',
+          backgroundColor: '#ffffff',
+          borderTopColor: '#f1f4f2',
           borderTopWidth: 1,
+          paddingBottom: 8,
+          paddingTop: 8,
+          height: 80,
+        },
+        tabBarLabelStyle: {
+          fontSize: 0, // Hide labels for cleaner look
+        },
+        tabBarIconStyle: {
+          marginTop: 4,
         },
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Explore',
+          title: 'Home',
           tabBarIcon: ({ size, color }) => (
-            <Compass size={size} color={color} />
+            <Home size={size} color={color} fill={color === '#121714' ? color : 'none'} />
           ),
         }}
       />
       <Tabs.Screen
         name="plan"
         options={{
-          title: 'My Plans',
+          title: 'Search',
           tabBarIcon: ({ size, color }) => (
-            <Calendar size={size} color={color} />
+            <Search size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: 'Map',
           tabBarIcon: ({ size, color }) => (
-            <User size={size} color={color} />
+            <MapTrifold size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: 'Profile',
           tabBarIcon: ({ size, color }) => (
-            <Settings size={size} color={color} />
+            <User size={size} color={color} />
           ),
         }}
       />
