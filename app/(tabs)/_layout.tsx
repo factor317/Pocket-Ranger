@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Chrome as Home, Search, Map as MapTrifold, User } from 'lucide-react-native';
+import { Home, Search, Map, User } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
@@ -28,7 +28,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ size, color }) => (
-            <Home size={size} color={color} fill={color === '#121714' ? color : 'none'} />
+            <Home size={size} color={color} />
           ),
         }}
       />
@@ -46,7 +46,7 @@ export default function TabLayout() {
         options={{
           title: 'Map',
           tabBarIcon: ({ size, color }) => (
-            <MapTrifold size={size} color={color} />
+            <Map size={size} color={color} />
           ),
         }}
       />
