@@ -1,21 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Calendar, MapPin } from 'lucide-react-native';
+import { Map } from 'lucide-react-native';
 
-export default function PlanScreen() {
+export default function ItineraryScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Calendar size={24} color="#6B8E23" />
-        <Text style={styles.title}>My Plans</Text>
+        <Map size={24} color="#51946c" />
+        <Text style={styles.title}>Itinerary</Text>
       </View>
+      
       <ScrollView style={styles.scrollView}>
         <View style={styles.emptyState}>
-          <MapPin size={48} color="#D4A5A5" />
-          <Text style={styles.emptyTitle}>No plans yet</Text>
+          <Map size={48} color="#51946c" />
+          <Text style={styles.emptyTitle}>No itinerary yet</Text>
           <Text style={styles.emptySubtitle}>
-            Start exploring to create your first adventure plan
+            Start exploring to create your first adventure itinerary
           </Text>
         </View>
       </ScrollView>
@@ -26,7 +27,7 @@ export default function PlanScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F6F2D7',
+    backgroundColor: '#f8fbfa',
   },
   header: {
     flexDirection: 'row',
@@ -36,8 +37,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontFamily: 'Inter-Bold',
-    color: '#6B8E23',
+    fontWeight: '700',
+    color: '#0e1a13',
     marginLeft: 12,
   },
   scrollView: {
@@ -52,15 +53,14 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontFamily: 'Inter-SemiBold',
-    color: '#333333',
+    fontWeight: '600',
+    color: '#0e1a13',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    color: '#8B9DC3',
+    color: '#51946c',
     textAlign: 'center',
     lineHeight: 24,
   },
