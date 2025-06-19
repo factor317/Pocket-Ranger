@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     paddingTop: 24,
   },
   searchContainerExpanded: {
-    minHeight: '50vh',
+    minHeight: 400,
   },
   searchContainerCollapsed: {
     minHeight: 'auto',
