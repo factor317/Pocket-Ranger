@@ -12,7 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, MapPin, Clock, ExternalLink, MessageCircle, Mic } from 'lucide-react-native';
+import { Search, MapPin, Clock, ExternalLink, MessageCircle } from 'lucide-react-native';
 
 interface LocationRecommendation {
   name: string;
@@ -176,16 +176,8 @@ export default function ExploreScreen() {
             />
           </View>
 
-          {/* Action Buttons */}
+          {/* Action Button */}
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.recordButton]}
-              disabled={true}
-            >
-              <Mic size={16} color="#121714" />
-              <Text style={styles.recordButtonText}>Record</Text>
-            </TouchableOpacity>
-            
             <TouchableOpacity
               style={[styles.actionButton, styles.planButton]}
               onPress={() => handleSearch()}
@@ -366,16 +358,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-  },
-  recordButton: {
-    backgroundColor: '#f1f4f2',
-    opacity: 0.5,
-  },
-  recordButtonText: {
-    color: '#121714',
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: 0.15,
   },
   planButton: {
     backgroundColor: '#94e0b2',
