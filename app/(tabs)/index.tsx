@@ -13,8 +13,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, MapPin, Clock, ExternalLink, MessageCircle, Mic } from 'lucide-react-native';
-import VoiceRecorder from '@/components/VoiceRecorder';
-import VoiceToggle from '@/components/VoiceToggle';
 
 interface LocationRecommendation {
   name: string;
@@ -43,7 +41,6 @@ export default function ExploreScreen() {
   const [userInput, setUserInput] = useState('');
   const [recommendation, setRecommendation] = useState<LocationRecommendation | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const [aiResponse, setAiResponse] = useState<string>('');
   const [showConversation, setShowConversation] = useState(false);
@@ -52,7 +49,7 @@ export default function ExploreScreen() {
     const inputText = searchText || userInput.trim();
     
     if (!inputText) {
-      Alert.alert('Input Required', 'Please enter your activity preference or use voice input');
+      Alert.alert('Input Required', 'Please enter your activity preference');
       return;
     }
 
@@ -126,16 +123,6 @@ export default function ExploreScreen() {
     }
   };
 
-  const handleVoiceTranscription = (transcribedText: string) => {
-    setUserInput(transcribedText);
-    // Automatically search when voice input is complete
-    handleSearch(transcribedText);
-  };
-
-  const handleVoiceError = (error: string) => {
-    Alert.alert('Voice Input Error', error);
-  };
-
   const openPartnerLink = async (url: string) => {
     try {
       const supported = await Linking.canOpenURL(url);
@@ -193,8 +180,7 @@ export default function ExploreScreen() {
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.actionButton, styles.recordButton]}
-              onPress={() => setIsVoiceMode(!isVoiceMode)}
-              disabled={loading}
+              disabled={true}
             >
               <Mic size={16} color="#121714" />
               <Text style={styles.recordButtonText}>Record</Text>
@@ -210,23 +196,6 @@ export default function ExploreScreen() {
               </Text>
             </TouchableOpacity>
           </View>
-
-          {/* Voice Recording Section */}
-          {isVoiceMode && (
-            <View style={styles.voiceSection}>
-              <VoiceRecorder
-                onTranscriptionComplete={handleVoiceTranscription}
-                onError={handleVoiceError}
-                disabled={loading}
-              />
-              {userInput ? (
-                <View style={styles.transcriptionContainer}>
-                  <Text style={styles.transcriptionLabel}>You said:</Text>
-                  <Text style={styles.transcriptionText}>{userInput}</Text>
-                </View>
-              ) : null}
-            </View>
-          )}
 
           {/* AI Response */}
           {aiResponse && (
@@ -400,6 +369,7 @@ const styles = StyleSheet.create({
   },
   recordButton: {
     backgroundColor: '#f1f4f2',
+    opacity: 0.5,
   },
   recordButtonText: {
     color: '#121714',
@@ -415,37 +385,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.15,
-  },
-  voiceSection: {
-    backgroundColor: '#f8faf9',
-    marginHorizontal: 16,
-    marginVertical: 12,
-    borderRadius: 16,
-    padding: 20,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e8f0ea',
-  },
-  transcriptionContainer: {
-    marginTop: 16,
-    padding: 12,
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#e8f0ea',
-  },
-  transcriptionLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#688273',
-    marginBottom: 4,
-  },
-  transcriptionText: {
-    fontSize: 14,
-    color: '#121714',
-    fontStyle: 'italic',
-    lineHeight: 20,
   },
   aiResponseContainer: {
     margin: 16,
