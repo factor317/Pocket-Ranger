@@ -104,7 +104,7 @@ export default function ExploreScreen() {
         },
         body: JSON.stringify({
           message,
-          conversationHistory: conversation.slice(-6), // Keep last 6 messages for context
+          conversationHistory: conversation.slice(-6),
         }),
       });
 
