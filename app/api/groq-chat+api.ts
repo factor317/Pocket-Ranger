@@ -7,7 +7,12 @@ export async function POST(request: Request) {
         JSON.stringify({ error: 'Invalid message provided' }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          },
         }
       );
     }
@@ -37,19 +42,49 @@ export async function POST(request: Request) {
       console.log('🎯 UTAH DETECTED - Forcing recommendation to moab-utah.json');
     }
 
-    // Groq API integration with Llama 3.1
-    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'llama-3.1-70b-versatile',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a helpful outdoor adventure planning assistant for Pocket Ranger. Your job is to understand user requests for outdoor activities and determine which adventure location best matches their request.
+    // For development/fallback, use local matching instead of Groq API
+    if (process.env.NODE_ENV === 'development' || !process.env.GROQ_API_KEY) {
+      console.log('🔄 Using fallback matching (development mode or no API key)');
+      
+      if (!recommendedFile) {
+        recommendedFile = getFallbackFile(message, availableAdventures);
+      }
+      
+      const fallbackResponse = generateFallbackResponse(message, recommendedFile);
+      
+      return new Response(
+        JSON.stringify({
+          response: fallbackResponse,
+          shouldSearch: true,
+          recommendedFile: recommendedFile,
+          extractedInfo: extractAdventureInfo(message)
+        }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          },
+        }
+      );
+    }
+
+    // Groq API integration (only if API key is available)
+    try {
+      const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-70b-versatile',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a helpful outdoor adventure planning assistant for Pocket Ranger. Your job is to understand user requests for outdoor activities and determine which adventure location best matches their request.
 
 Available adventure locations:
 1. avon-colorado.json - Avon, Colorado (hiking, breweries, bison burgers, Vail Valley, Beaver Creek, high country, mountain adventures)
@@ -71,22 +106,56 @@ CRITICAL RULES:
 Analyze the user's request and determine which adventure file best matches their interests. Your response should include the exact filename and explain why this location matches their request.
 
 Example: For "Hiking in utah, 4 days, casual dining" you MUST recommend "moab-utah.json" because Utah is specifically mentioned and Moab is Utah's premier hiking destination with excellent casual dining options.`
-          },
-          ...conversationHistory,
-          {
-            role: 'user',
-            content: message
-          }
-        ],
-        temperature: 0.05, // Very low temperature for consistent matching
-        max_tokens: 300,
-        top_p: 0.9,
-        stream: false,
-      }),
-    });
+            },
+            ...conversationHistory,
+            {
+              role: 'user',
+              content: message
+            }
+          ],
+          temperature: 0.05,
+          max_tokens: 300,
+          top_p: 0.9,
+          stream: false,
+        }),
+      });
 
-    if (!groqResponse.ok) {
-      console.error('❌ Groq API error:', groqResponse.status, groqResponse.statusText);
+      if (!groqResponse.ok) {
+        throw new Error(`Groq API error: ${groqResponse.status}`);
+      }
+
+      const aiData = await groqResponse.json();
+      const aiResponse = aiData.choices[0]?.message?.content || '';
+
+      console.log('🤖 Groq AI Response:', aiResponse);
+
+      // Use pre-determined file if Utah was detected, otherwise extract from AI response
+      if (!recommendedFile) {
+        recommendedFile = extractRecommendedFile(aiResponse, message, availableAdventures);
+      }
+      
+      console.log('📁 Final recommended file:', recommendedFile);
+      
+      return new Response(
+        JSON.stringify({
+          response: aiResponse,
+          shouldSearch: true,
+          recommendedFile,
+          extractedInfo: extractAdventureInfo(message),
+          conversationId: Date.now().toString(),
+        }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          },
+        }
+      );
+    } catch (groqError) {
+      console.error('❌ Groq API error, using fallback:', groqError);
       
       // Use pre-determined file if Utah was detected
       if (!recommendedFile) {
@@ -95,9 +164,11 @@ Example: For "Hiking in utah, 4 days, casual dining" you MUST recommend "moab-ut
       
       console.log('🔄 Using fallback file:', recommendedFile);
       
+      const fallbackResponse = generateFallbackResponse(message, recommendedFile);
+      
       return new Response(
         JSON.stringify({
-          response: `I'd love to help you plan your adventure! Let me search our adventure database for the perfect match for your request!`,
+          response: fallbackResponse,
           shouldSearch: true,
           recommendedFile: recommendedFile,
           extractedInfo: extractAdventureInfo(message)
@@ -113,34 +184,13 @@ Example: For "Hiking in utah, 4 days, casual dining" you MUST recommend "moab-ut
         }
       );
     }
-
-    const aiData = await groqResponse.json();
-    const aiResponse = aiData.choices[0]?.message?.content || '';
-
-    console.log('🤖 Groq AI Response:', aiResponse);
-
-    // Use pre-determined file if Utah was detected, otherwise extract from AI response
-    if (!recommendedFile) {
-      recommendedFile = extractRecommendedFile(aiResponse, message, availableAdventures);
-    }
-    
-    console.log('📁 Final recommended file:', recommendedFile);
-    
-    // Always trigger search for adventure data
-    const shouldSearch = true;
-    const extractedInfo = extractAdventureInfo(message);
-
+  } catch (error) {
+    console.error('❌ Groq Chat API Error:', error);
     return new Response(
-      JSON.stringify({
-        response: aiResponse,
-        shouldSearch,
-        recommendedFile,
-        extractedInfo,
-        conversationId: Date.now().toString(),
-      }),
+      JSON.stringify({ error: 'Failed to process message' }),
       {
-        status: 200,
-        headers: {
+        status: 500,
+        headers: { 
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -148,16 +198,26 @@ Example: For "Hiking in utah, 4 days, casual dining" you MUST recommend "moab-ut
         },
       }
     );
-  } catch (error) {
-    console.error('❌ Groq Chat API Error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to process message' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
   }
+}
+
+function generateFallbackResponse(message: string, recommendedFile: string): string {
+  const fileMap: { [key: string]: string } = {
+    'avon-colorado.json': 'Avon, Colorado',
+    'moab-utah.json': 'Moab, Utah',
+    'glacier-montana.json': 'Glacier National Park, Montana',
+    'lake-tahoe.json': 'Lake Tahoe, California',
+    'sedona-arizona.json': 'Sedona, Arizona',
+    'asheville-north-carolina.json': 'Asheville, North Carolina',
+    'olympic-washington.json': 'Olympic Peninsula, Washington',
+    'acadia-maine.json': 'Acadia National Park, Maine',
+    'big-sur-california.json': 'Big Sur, California',
+    'great-smoky-mountains.json': 'Great Smoky Mountains, Tennessee'
+  };
+
+  const location = fileMap[recommendedFile] || 'an amazing destination';
+  
+  return `Perfect! I've found some amazing outdoor adventures in ${location} that match your request. I've created a detailed itinerary for you with scheduled activities and partner recommendations. Tap on the Itinerary tab to view your personalized adventure plan!`;
 }
 
 function getFallbackFile(userMessage: string, availableAdventures: any[]): string {

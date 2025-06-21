@@ -92,7 +92,9 @@ export default function HomeScreen() {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch recommendation');
+          const errorText = await response.text();
+          console.error('❌ pocPlan API error:', response.status, errorText);
+          throw new Error(`Failed to fetch recommendation: ${response.status}`);
         }
 
         const data = await response.json();
@@ -184,6 +186,7 @@ export default function HomeScreen() {
 
   const processWithAI = async (message: string) => {
     try {
+      console.log('🌐 Making request to /api/groq-chat');
       const response = await fetch('/api/groq-chat', {
         method: 'POST',
         headers: {
@@ -195,11 +198,27 @@ export default function HomeScreen() {
         }),
       });
 
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+
       if (!response.ok) {
-        throw new Error('AI processing failed');
+        const errorText = await response.text();
+        console.error('❌ Groq API response error:', response.status, errorText);
+        throw new Error(`AI processing failed: ${response.status}`);
       }
 
-      return await response.json();
+      const responseText = await response.text();
+      console.log('📄 Raw response:', responseText.substring(0, 200) + '...');
+
+      try {
+        const jsonData = JSON.parse(responseText);
+        console.log('✅ Successfully parsed JSON response');
+        return jsonData;
+      } catch (parseError) {
+        console.error('❌ Failed to parse JSON:', parseError);
+        console.error('❌ Response was:', responseText);
+        throw new Error('Invalid JSON response from AI service');
+      }
     } catch (error) {
       console.error('❌ AI processing error:', error);
       
