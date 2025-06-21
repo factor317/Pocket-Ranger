@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking, TextInput, Modal, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MapPin, Clock, ExternalLink, Save, RotateCcw, Mountain as Mountains, Utensils, Waves, Moon, Compass, TreePine, Camera, Coffee } from 'lucide-react-native';
+import { MapPin, Clock, ExternalLink, Save, RotateCcw, Mountain as Mountains, Utensils, Waves, Moon, Compass, TreePine, Camera, Coffee, X } from 'lucide-react-native';
 import { router } from 'expo-router';
 
 interface ScheduleItem {
@@ -49,12 +49,15 @@ const getActivityIcon = (activity: string) => {
 export default function ItineraryScreen() {
   const [currentItinerary, setCurrentItinerary] = useState<LocationRecommendation | null>(null);
   const [isUnsaved, setIsUnsaved] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [adventureName, setAdventureName] = useState('');
 
   useEffect(() => {
     // Check for current recommendation from global state
     if (global.currentRecommendation) {
       setCurrentItinerary(global.currentRecommendation);
       setIsUnsaved(global.isUnsavedItinerary || false);
+      setAdventureName(global.currentRecommendation.name || '');
     }
   }, []);
 
@@ -74,26 +77,40 @@ export default function ItineraryScreen() {
   const handleSaveItinerary = () => {
     if (!currentItinerary) return;
 
-    Alert.prompt(
-      'Save Adventure',
-      'What would you like to name this adventure?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Save',
-          onPress: (name) => {
-            if (name && name.trim()) {
-              saveItinerary(name.trim());
-            }
+    if (Platform.OS === 'web') {
+      // Use custom modal for web
+      setAdventureName(currentItinerary.name);
+      setShowSaveModal(true);
+    } else {
+      // Use Alert.prompt for mobile
+      Alert.prompt(
+        'Save Adventure',
+        'What would you like to name this adventure?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
           },
-        },
-      ],
-      'plain-text',
-      currentItinerary.name
-    );
+          {
+            text: 'Save',
+            onPress: (name) => {
+              if (name && name.trim()) {
+                saveItinerary(name.trim());
+              }
+            },
+          },
+        ],
+        'plain-text',
+        currentItinerary.name
+      );
+    }
+  };
+
+  const handleSaveFromModal = () => {
+    if (adventureName.trim()) {
+      saveItinerary(adventureName.trim());
+      setShowSaveModal(false);
+    }
   };
 
   const saveItinerary = (name: string) => {
@@ -261,6 +278,58 @@ export default function ItineraryScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Save Modal for Web */}
+      <Modal
+        visible={showSaveModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowSaveModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Save Adventure</Text>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setShowSaveModal(false)}
+              >
+                <X size={24} color="#688273" />
+              </TouchableOpacity>
+            </View>
+            
+            <Text style={styles.modalSubtitle}>What would you like to name this adventure?</Text>
+            
+            <TextInput
+              style={styles.modalInput}
+              value={adventureName}
+              onChangeText={setAdventureName}
+              placeholder="Adventure name"
+              autoFocus={Platform.OS === 'web'}
+              selectTextOnFocus={true}
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setShowSaveModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.modalSaveButton, !adventureName.trim() && styles.modalSaveButtonDisabled]}
+                onPress={handleSaveFromModal}
+                disabled={!adventureName.trim()}
+              >
+                <Text style={[styles.modalSaveText, !adventureName.trim() && styles.modalSaveTextDisabled]}>
+                  Save
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -467,5 +536,92 @@ const styles = StyleSheet.create({
     color: '#51946c',
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#121714',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    color: '#688273',
+    marginBottom: 20,
+    lineHeight: 22,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#e8f2ec',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    color: '#121714',
+    backgroundColor: '#f8fbfa',
+    marginBottom: 24,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalCancelButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e8f2ec',
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#688273',
+  },
+  modalSaveButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: '#10b981',
+    alignItems: 'center',
+  },
+  modalSaveButtonDisabled: {
+    backgroundColor: '#d1e6d9',
+  },
+  modalSaveText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  modalSaveTextDisabled: {
+    color: '#688273',
   },
 });
