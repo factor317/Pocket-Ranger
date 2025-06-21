@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MapPin, Clock, ExternalLink, Save, RotateCcw, Mountains, Utensils, Waves, Moon, Compass, TreePine, Camera, Coffee } from 'lucide-react-native';
+import { MapPin, Clock, ExternalLink, Save, RotateCcw, Mountain as Mountains, Utensils, Waves, Moon, Compass, TreePine, Camera, Coffee } from 'lucide-react-native';
 import { router } from 'expo-router';
 
 interface ScheduleItem {
