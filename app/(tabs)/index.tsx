@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -44,6 +44,24 @@ export default function HomeScreen() {
   const [aiResponse, setAiResponse] = useState<string>('');
   const [showConversation, setShowConversation] = useState(false);
 
+  // Reset state when returning to home
+  useEffect(() => {
+    const resetState = () => {
+      setUserInput('');
+      setLoading(false);
+      setConversation([]);
+      setAiResponse('');
+      setShowConversation(false);
+      
+      // Clear global state
+      global.currentRecommendation = null;
+      global.isUnsavedItinerary = false;
+    };
+
+    // Reset on component mount
+    resetState();
+  }, []);
+
   const handleSearch = async (searchText?: string) => {
     const inputText = searchText || userInput.trim();
     
@@ -59,7 +77,7 @@ export default function HomeScreen() {
       const aiResponse = await processWithAI(inputText);
       
       if (aiResponse.shouldSearch) {
-        // Search for adventure recommendations
+        // Search for adventure recommendations from data source
         const response = await fetch('/api/pocPlan', {
           method: 'POST',
           headers: {
@@ -108,28 +126,50 @@ export default function HomeScreen() {
     let location = '';
     let activity = '';
     
-    // Simple extraction logic
+    // Extract location mentions
     if (input.includes('avon') || input.includes('colorado')) {
       location = 'Avon, Colorado';
     } else if (input.includes('madison')) {
       location = 'Madison area';
     } else if (input.includes('milwaukee')) {
       location = 'Milwaukee';
+    } else if (input.includes('moab') || input.includes('utah')) {
+      location = 'Moab, Utah';
+    } else if (input.includes('glacier') || input.includes('montana')) {
+      location = 'Glacier National Park';
+    } else if (input.includes('tahoe') || input.includes('california')) {
+      location = 'Lake Tahoe';
+    } else if (input.includes('sedona') || input.includes('arizona')) {
+      location = 'Sedona, Arizona';
+    } else if (input.includes('asheville') || input.includes('north carolina')) {
+      location = 'Asheville, North Carolina';
     }
     
+    // Extract activity type
     if (input.includes('hik')) {
       activity = 'hiking';
     } else if (input.includes('fish')) {
       activity = 'fishing';
     } else if (input.includes('explor')) {
       activity = 'exploration';
+    } else if (input.includes('camp')) {
+      activity = 'camping';
+    } else if (input.includes('climb')) {
+      activity = 'climbing';
     }
 
     // Generate contextual response
-    let contextualResponse = `Great choice! I've found some amazing ${activity} opportunities`;
+    let contextualResponse = 'Perfect! I\'ve found some amazing';
+    if (activity) {
+      contextualResponse += ` ${activity} opportunities`;
+    } else {
+      contextualResponse += ' outdoor adventures';
+    }
+    
     if (location) {
       contextualResponse += ` in ${location}`;
     }
+    
     contextualResponse += '. I\'ve created a detailed itinerary for you with scheduled activities and partner recommendations. ';
     contextualResponse += 'Tap on the Itinerary tab to view your personalized adventure plan!';
     

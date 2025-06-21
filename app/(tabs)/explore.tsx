@@ -17,7 +17,7 @@ interface Recommendation {
   title: string;
   description: string;
   imageUrl: string;
-  adventureFile: string;
+  searchQuery: string;
 }
 
 const recommendations: Recommendation[] = [
@@ -26,41 +26,55 @@ const recommendations: Recommendation[] = [
     title: 'Avon Colorado Adventure',
     description: 'Experience the best of Colorado\'s high country with scenic hikes, craft breweries, and local cuisine.',
     imageUrl: 'https://images.pexels.com/photos/2743287/pexels-photo-2743287.jpeg?auto=compress&cs=tinysrgb&w=800',
-    adventureFile: 'avon-colorado.json',
+    searchQuery: 'hiking for 3 days near Avon Colorado',
   },
   {
     id: '2',
     title: 'Moab Desert Adventure',
     description: 'Explore stunning red rock landscapes with iconic arches and desert trails.',
     imageUrl: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=800',
-    adventureFile: 'moab-utah.json',
+    searchQuery: 'weekend adventure in Moab Utah',
   },
   {
     id: '3',
     title: 'Glacier National Park',
     description: 'Discover pristine wilderness with alpine lakes and dramatic mountain peaks.',
     imageUrl: 'https://images.pexels.com/photos/1770809/pexels-photo-1770809.jpeg?auto=compress&cs=tinysrgb&w=800',
-    adventureFile: 'glacier-montana.json',
+    searchQuery: 'Glacier National Park hiking trip',
   },
   {
     id: '4',
     title: 'Acadia National Park',
     description: 'Experience rugged coastline and granite peaks in Maine\'s only national park.',
     imageUrl: 'https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg?auto=compress&cs=tinysrgb&w=800',
-    adventureFile: 'acadia-maine.json',
+    searchQuery: 'Acadia National Park Maine coastal hiking',
+  },
+  {
+    id: '5',
+    title: 'Lake Tahoe Alpine Adventure',
+    description: 'Discover crystal-clear waters and mountain peaks around America\'s largest alpine lake.',
+    imageUrl: 'https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg?auto=compress&cs=tinysrgb&w=800',
+    searchQuery: 'Lake Tahoe hiking and scenic drives',
+  },
+  {
+    id: '6',
+    title: 'Sedona Red Rock Experience',
+    description: 'Explore mystical red rock formations and energy vortexes in Arizona\'s desert landscape.',
+    imageUrl: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=800',
+    searchQuery: 'Sedona Arizona red rock hiking',
   },
 ];
 
 export default function ExploreScreen() {
   const handleRecommendationPress = async (recommendation: Recommendation) => {
     try {
-      // Fetch the adventure data
+      // Fetch the adventure data using the search query
       const response = await fetch('/api/pocPlan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userInput: recommendation.title }),
+        body: JSON.stringify({ userInput: recommendation.searchQuery }),
       });
 
       if (!response.ok) {
@@ -73,7 +87,7 @@ export default function ExploreScreen() {
       global.currentRecommendation = adventureData;
       global.isUnsavedItinerary = true;
       
-      // Navigate to itinerary tab to show results
+      // Navigate to itinerary tab to show results with consistent styling
       router.push('/itinerary');
       
     } catch (error) {
