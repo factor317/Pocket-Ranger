@@ -7,12 +7,12 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
-  Linking,
   Image,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, MapPin, Clock, ExternalLink, MessageCircle } from 'lucide-react-native';
+import AiResponseDisplay from '../../components/AiResponseDisplay';
+import RecommendationDisplay from '../../components/RecommendationDisplay';
 
 interface LocationRecommendation {
   name: string;
@@ -123,19 +123,6 @@ export default function ExploreScreen() {
     }
   };
 
-  const openPartnerLink = async (url: string) => {
-    try {
-      const supported = await Linking.canOpenURL(url);
-      if (supported) {
-        await Linking.openURL(url);
-      } else {
-        Alert.alert('Error', 'Unable to open link');
-      }
-    } catch (error) {
-      console.error('Link error:', error);
-    }
-  };
-
   const handleNewSearch = () => {
     setRecommendation(null);
     setUserInput('');
@@ -184,105 +171,24 @@ export default function ExploreScreen() {
               disabled={loading || !userInput.trim()}
             >
               <Text style={styles.planButtonText}>
-                {loading ? <Text>Planning...</Text> : <Text>Plan</Text>}
+                {loading ? 'Planning...' : 'Plan'}
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* AI Response */}
-          {aiResponse && (
-            <View style={styles.aiResponseContainer}>
-              <View style={styles.aiResponseHeader}>
-                <MessageCircle size={20} color="#121714" />
-                <Text style={styles.aiResponseTitle}>Pocket Ranger Assistant</Text>
-                {conversation.length > 2 && (
-                  <TouchableOpacity onPress={toggleConversation}>
-                    <Text style={styles.conversationToggle}>
-                      {showConversation ? <Text>Hide</Text> : <Text>Show</Text>} Conversation
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              <Text style={styles.aiResponseText}>{aiResponse}</Text>
-              
-              {showConversation && conversation.length > 2 && (
-                <View style={styles.conversationContainer}>
-                  <Text style={styles.conversationTitle}>Conversation History</Text>
-                  {conversation.slice(0, -2).map((message, index) => (
-                    <View key={index} style={[
-                      styles.conversationMessage,
-                      message.role === 'user' ? styles.userMessage : styles.assistantMessage
-                    ]}>
-                      <Text style={[
-                        styles.conversationMessageText,
-                        message.role === 'user' ? styles.userMessageText : styles.assistantMessageText
-                      ]}>
-                        {message.content}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </View>
-          )}
+          {/* AI Response Component */}
+          <AiResponseDisplay
+            aiResponse={aiResponse}
+            conversation={conversation}
+            showConversation={showConversation}
+            toggleConversation={toggleConversation}
+          />
 
-          {/* Adventure Recommendation */}
-          {recommendation && (
-            <View style={styles.recommendationContainer}>
-              <View style={styles.recommendationHeader}>
-                <MapPin size={24} color="#121714" />
-                <View style={styles.recommendationHeaderText}>
-                  <Text style={styles.recommendationTitle}>{recommendation.name}</Text>
-                  <Text style={styles.recommendationLocation}>{recommendation.city}</Text>
-                </View>
-              </View>
-              
-              <Text style={styles.recommendationDescription}>
-                {recommendation.description}
-              </Text>
-
-              <View style={styles.scheduleContainer}>
-                <View style={styles.scheduleHeader}>
-                  <Clock size={20} color="#121714" />
-                  <Text style={styles.scheduleTitle}>Your Itinerary</Text>
-                </View>
-                
-                {recommendation.schedule.map((item, index) => (
-                  <View key={index} style={styles.scheduleItem}>
-                    <View style={styles.scheduleTime}>
-                      <Text style={styles.scheduleTimeText}>{item.time}</Text>
-                    </View>
-                    <View style={styles.scheduleContent}>
-                      <Text style={styles.scheduleActivity}>{item.activity}</Text>
-                      <Text style={styles.scheduleLocation}>{item.location}</Text>
-                      {item.description && (
-                        <Text style={styles.scheduleDescription}>{item.description}</Text>
-                      )}
-                      {item.partnerLink && (
-                        <TouchableOpacity
-                          style={styles.partnerLink}
-                          onPress={() => openPartnerLink(item.partnerLink!)}
-                        >
-                          <Text style={styles.partnerLinkText}>
-                            View on {item.partnerName}
-                          </Text>
-                          <ExternalLink size={14} color="#94e0b2" />
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  </View>
-                ))}
-              </View>
-
-              {/* New Search Button */}
-              <TouchableOpacity
-                style={styles.newSearchButton}
-                onPress={handleNewSearch}
-              >
-                <Text style={styles.newSearchButtonText}>Plan Another Adventure</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          {/* Adventure Recommendation Component */}
+          <RecommendationDisplay
+            recommendation={recommendation}
+            onNewSearch={handleNewSearch}
+          />
         </View>
       </ScrollView>
     </View>
@@ -366,210 +272,6 @@ const styles = StyleSheet.create({
     color: '#121714',
     fontSize: 14,
     fontWeight: '700',
-    letterSpacing: 0.15,
-  },
-  aiResponseContainer: {
-    margin: 16,
-    backgroundColor: '#f8faf9',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#e8f0ea',
-  },
-  aiResponseHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  aiResponseTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#121714',
-    marginLeft: 8,
-    flex: 1,
-  },
-  conversationToggle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#688273',
-    textDecorationLine: 'underline',
-  },
-  aiResponseText: {
-    fontSize: 15,
-    color: '#121714',
-    lineHeight: 22,
-    fontWeight: '400',
-  },
-  conversationContainer: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#e8f0ea',
-  },
-  conversationTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#688273',
-    marginBottom: 12,
-  },
-  conversationMessage: {
-    marginBottom: 8,
-    padding: 8,
-    borderRadius: 8,
-  },
-  userMessage: {
-    backgroundColor: '#ffffff',
-    alignSelf: 'flex-end',
-    maxWidth: '80%',
-    borderWidth: 1,
-    borderColor: '#e8f0ea',
-  },
-  assistantMessage: {
-    backgroundColor: '#f1f4f2',
-    alignSelf: 'flex-start',
-    maxWidth: '80%',
-  },
-  conversationMessageText: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  userMessageText: {
-    color: '#121714',
-  },
-  assistantMessageText: {
-    color: '#121714',
-  },
-  recommendationContainer: {
-    margin: 16,
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#e8f0ea',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 2,
-      },
-      web: {
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-      },
-    }),
-  },
-  recommendationHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  recommendationHeaderText: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  recommendationTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#121714',
-    lineHeight: 26,
-  },
-  recommendationLocation: {
-    fontSize: 14,
-    color: '#688273',
-    marginTop: 2,
-    fontWeight: '500',
-  },
-  recommendationDescription: {
-    fontSize: 16,
-    color: '#121714',
-    lineHeight: 24,
-    marginBottom: 24,
-    fontWeight: '400',
-  },
-  scheduleContainer: {
-    marginTop: 8,
-  },
-  scheduleHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  scheduleTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#121714',
-    marginLeft: 8,
-  },
-  scheduleItem: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f4f2',
-  },
-  scheduleTime: {
-    width: 80,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-  scheduleTimeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#121714',
-    backgroundColor: '#f1f4f2',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    textAlign: 'center',
-  },
-  scheduleContent: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  scheduleActivity: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#121714',
-    marginBottom: 4,
-    lineHeight: 22,
-  },
-  scheduleLocation: {
-    fontSize: 14,
-    color: '#688273',
-    marginBottom: 4,
-    fontWeight: '500',
-  },
-  scheduleDescription: {
-    fontSize: 13,
-    color: '#688273',
-    marginBottom: 8,
-    fontStyle: 'italic',
-    lineHeight: 18,
-  },
-  partnerLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  partnerLinkText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#94e0b2',
-  },
-  newSearchButton: {
-    backgroundColor: '#94e0b2',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  newSearchButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#121714',
     letterSpacing: 0.15,
   },
 });
