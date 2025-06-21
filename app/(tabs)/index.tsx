@@ -68,12 +68,17 @@ export default function HomeScreen() {
     }
 
     setLoading(true);
+    console.log('🔍 Starting search with input:', inputText);
     
     try {
       // Process with AI for conversation and get recommended file
+      console.log('🤖 Calling Groq AI...');
       const aiResponse = await processWithAI(inputText);
+      console.log('🤖 AI Response received:', aiResponse);
       
       if (aiResponse.shouldSearch) {
+        console.log('🔍 AI recommends searching with file:', aiResponse.recommendedFile);
+        
         // Search for adventure recommendations from data source using the recommended file
         const response = await fetch('/api/pocPlan', {
           method: 'POST',
@@ -91,11 +96,17 @@ export default function HomeScreen() {
         }
 
         const data = await response.json();
+        console.log('📋 Adventure data received:', {
+          name: data.name,
+          city: data.city,
+          scheduleItems: data.schedule?.length || 0
+        });
         
         // Store the recommendation globally and navigate to itinerary
         global.currentRecommendation = data;
         global.isUnsavedItinerary = true;
         
+        console.log('🧭 Navigating to itinerary tab...');
         // Navigate to itinerary tab to show results
         router.push('/itinerary');
       }
@@ -112,8 +123,8 @@ export default function HomeScreen() {
       setAiResponse(dynamicResponse);
       
     } catch (error) {
+      console.error('❌ Search error:', error);
       Alert.alert('Error', 'Failed to get recommendation. Please try again.');
-      console.error('Search error:', error);
     } finally {
       setLoading(false);
     }
@@ -190,11 +201,21 @@ export default function HomeScreen() {
 
       return await response.json();
     } catch (error) {
-      console.error('AI processing error:', error);
+      console.error('❌ AI processing error:', error);
+      
+      // Enhanced fallback logic
+      const messageLower = message.toLowerCase();
+      let fallbackFile = 'avon-colorado.json';
+      
+      if (messageLower.includes('utah') || messageLower.includes('moab')) {
+        fallbackFile = 'moab-utah.json';
+        console.log('🎯 Fallback detected Utah - using moab-utah.json');
+      }
+      
       return {
         response: "I'd love to help you plan your adventure! Let me search for some great options for you.",
         shouldSearch: true,
-        recommendedFile: 'avon-colorado.json',
+        recommendedFile: fallbackFile,
         extractedInfo: {}
       };
     }

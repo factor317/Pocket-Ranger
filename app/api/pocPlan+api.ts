@@ -17,19 +17,24 @@ export async function POST(request: Request) {
 
     let selectedAdventure = null;
 
-    console.log('pocPlan API called with:', { userInput, recommendedFile });
+    console.log('🚀 pocPlan API called with:', { userInput, recommendedFile });
 
     // If a specific file is recommended, try to load it first
     if (recommendedFile && typeof recommendedFile === 'string') {
       try {
         const adventurePath = path.join(process.cwd(), 'data', 'adventures', recommendedFile);
-        console.log('Attempting to load adventure file:', adventurePath);
+        console.log('📂 Attempting to load adventure file:', adventurePath);
         
         if (fs.existsSync(adventurePath)) {
           const fileContent = fs.readFileSync(adventurePath, 'utf8');
           selectedAdventure = JSON.parse(fileContent);
           console.log(`✅ Successfully loaded recommended adventure: ${recommendedFile}`);
-          console.log('Adventure data:', JSON.stringify(selectedAdventure, null, 2));
+          console.log('📋 Adventure summary:', {
+            name: selectedAdventure.name,
+            city: selectedAdventure.city,
+            activity: selectedAdventure.activity,
+            scheduleItems: selectedAdventure.schedule?.length || 0
+          });
         } else {
           console.error(`❌ Adventure file does not exist: ${adventurePath}`);
         }
@@ -40,7 +45,7 @@ export async function POST(request: Request) {
 
     // If no recommended file or loading failed, fall back to original matching logic
     if (!selectedAdventure) {
-      console.log('Falling back to original matching logic...');
+      console.log('🔄 Falling back to original matching logic...');
       
       // Load sample queries and adventures
       const sampleQueriesPath = path.join(process.cwd(), 'data', 'sample-queries.json');
@@ -51,27 +56,40 @@ export async function POST(request: Request) {
         // Simple keyword matching logic
         const input = userInput.toLowerCase();
 
-        // Try to match against sample queries first
-        for (const queryData of sampleQueries.queries) {
-          const queryWords = queryData.query.toLowerCase().split(' ');
-          const inputWords = input.split(' ');
-          
-          // Check for keyword matches
-          const matches = queryWords.filter(word => 
-            inputWords.some(inputWord => 
-              inputWord.includes(word) || word.includes(inputWord)
-            )
-          );
-          
-          if (matches.length >= 2) { // Require at least 2 matching keywords
-            try {
-              const adventurePath = path.join(process.cwd(), 'data', 'adventures', queryData.adventure_file);
-              selectedAdventure = JSON.parse(fs.readFileSync(adventurePath, 'utf8'));
-              console.log(`✅ Loaded adventure via query matching: ${queryData.adventure_file}`);
-              break;
-            } catch (error) {
-              console.error(`Error loading adventure file: ${queryData.adventure_file}`, error);
-              continue;
+        // CRITICAL: Check for Utah first
+        if (input.includes('utah') || input.includes('moab')) {
+          try {
+            const adventurePath = path.join(process.cwd(), 'data', 'adventures', 'moab-utah.json');
+            selectedAdventure = JSON.parse(fs.readFileSync(adventurePath, 'utf8'));
+            console.log('🎯 Loaded Utah adventure via direct matching: moab-utah.json');
+          } catch (error) {
+            console.error('❌ Error loading Utah adventure file', error);
+          }
+        }
+
+        // Try to match against sample queries if not Utah
+        if (!selectedAdventure) {
+          for (const queryData of sampleQueries.queries) {
+            const queryWords = queryData.query.toLowerCase().split(' ');
+            const inputWords = input.split(' ');
+            
+            // Check for keyword matches
+            const matches = queryWords.filter(word => 
+              inputWords.some(inputWord => 
+                inputWord.includes(word) || word.includes(inputWord)
+              )
+            );
+            
+            if (matches.length >= 2) { // Require at least 2 matching keywords
+              try {
+                const adventurePath = path.join(process.cwd(), 'data', 'adventures', queryData.adventure_file);
+                selectedAdventure = JSON.parse(fs.readFileSync(adventurePath, 'utf8'));
+                console.log(`✅ Loaded adventure via query matching: ${queryData.adventure_file}`);
+                break;
+              } catch (error) {
+                console.error(`❌ Error loading adventure file: ${queryData.adventure_file}`, error);
+                continue;
+              }
             }
           }
         }
@@ -101,7 +119,7 @@ export async function POST(request: Request) {
                 break;
               }
             } catch (error) {
-              console.error(`Error loading adventure file: ${file}`, error);
+              console.error(`❌ Error loading adventure file: ${file}`, error);
               continue;
             }
           }
@@ -127,7 +145,26 @@ export async function POST(request: Request) {
       }
     }
 
-    console.log('Final selected adventure:', selectedAdventure?.name);
+    console.log('🎉 Final selected adventure:', {
+      name: selectedAdventure?.name,
+      city: selectedAdventure?.city,
+      activity: selectedAdventure?.activity,
+      scheduleItems: selectedAdventure?.schedule?.length || 0
+    });
+
+    // Validate the adventure data structure
+    if (!selectedAdventure.name || !selectedAdventure.city || !selectedAdventure.schedule) {
+      console.error('❌ Invalid adventure data structure:', selectedAdventure);
+      return new Response(
+        JSON.stringify({ error: 'Invalid adventure data' }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    console.log('📤 Returning adventure data to client');
 
     return new Response(
       JSON.stringify(selectedAdventure),

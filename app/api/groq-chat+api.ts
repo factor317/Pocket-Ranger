@@ -12,10 +12,12 @@ export async function POST(request: Request) {
       );
     }
 
+    console.log('🔍 Groq API called with message:', message);
+
     // List of available adventure files with enhanced keywords
     const availableAdventures = [
       { file: 'avon-colorado.json', keywords: ['avon', 'colorado', 'vail', 'beaver creek', 'skiing', 'mountain', 'high country', 'brewery', 'bison burger', 'denver', 'aspen'] },
-      { file: 'moab-utah.json', keywords: ['moab', 'utah', 'red rock', 'arches', 'desert', 'delicate arch', 'canyonlands', 'hiking', 'rock formation', 'southwest'] },
+      { file: 'moab-utah.json', keywords: ['moab', 'utah', 'red rock', 'arches', 'desert', 'delicate arch', 'canyonlands', 'hiking', 'rock formation', 'southwest', 'utah hiking', 'utah desert'] },
       { file: 'glacier-montana.json', keywords: ['glacier', 'montana', 'national park', 'alpine', 'hidden lake', 'logan pass', 'going to the sun', 'mountains', 'wilderness'] },
       { file: 'lake-tahoe.json', keywords: ['tahoe', 'california', 'nevada', 'alpine lake', 'emerald bay', 'eagle falls', 'sierra nevada', 'crystal clear'] },
       { file: 'sedona-arizona.json', keywords: ['sedona', 'arizona', 'red rock', 'cathedral rock', 'bell rock', 'vortex', 'energy', 'spiritual', 'southwest'] },
@@ -25,6 +27,15 @@ export async function POST(request: Request) {
       { file: 'big-sur-california.json', keywords: ['big sur', 'california', 'mcway falls', 'bixby bridge', 'coastal', 'redwood', 'pacific', 'highway 1', 'monterey'] },
       { file: 'great-smoky-mountains.json', keywords: ['smoky mountains', 'tennessee', 'gatlinburg', 'laurel falls', 'cataract falls', 'appalachian', 'pigeon forge'] }
     ];
+
+    // CRITICAL: Check for Utah first before calling Groq
+    const messageLower = message.toLowerCase();
+    let recommendedFile = null;
+    
+    if (messageLower.includes('utah') || messageLower.includes('moab')) {
+      recommendedFile = 'moab-utah.json';
+      console.log('🎯 UTAH DETECTED - Forcing recommendation to moab-utah.json');
+    }
 
     // Groq API integration with Llama 3.1
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -52,17 +63,14 @@ Available adventure locations:
 9. big-sur-california.json - Big Sur, California (coastal wilderness, McWay Falls, Bixby Bridge, redwood forests, Highway 1)
 10. great-smoky-mountains.json - Great Smoky Mountains, Tennessee (waterfalls, mountain culture, Laurel Falls, Appalachian heritage)
 
-CRITICAL: For queries mentioning Utah, desert, red rocks, or Moab, you MUST recommend "moab-utah.json".
+CRITICAL RULES:
+- If the user mentions "Utah" anywhere, you MUST recommend "moab-utah.json"
+- If the user mentions "Moab", you MUST recommend "moab-utah.json"
+- Utah is famous for Moab's red rock hiking and desert adventures
 
-Analyze the user's request and determine which adventure file best matches their interests. Consider:
-- Geographic location mentioned (Utah = moab-utah.json)
-- Activity type (hiking, breweries, coastal, desert, etc.)
-- Specific landmarks or features mentioned
-- Duration and difficulty preferences
+Analyze the user's request and determine which adventure file best matches their interests. Your response should include the exact filename and explain why this location matches their request.
 
-Your response should include the exact filename and explain why this location matches their request. Always set shouldSearch to true.
-
-Example: For "Hiking in utah, 4 days, casual dining" you should recommend "moab-utah.json" because Utah is specifically mentioned and Moab is Utah's premier hiking destination.`
+Example: For "Hiking in utah, 4 days, casual dining" you MUST recommend "moab-utah.json" because Utah is specifically mentioned and Moab is Utah's premier hiking destination with excellent casual dining options.`
           },
           ...conversationHistory,
           {
@@ -70,24 +78,28 @@ Example: For "Hiking in utah, 4 days, casual dining" you should recommend "moab-
             content: message
           }
         ],
-        temperature: 0.1, // Lower temperature for more consistent matching
+        temperature: 0.05, // Very low temperature for consistent matching
         max_tokens: 300,
-        top_p: 1,
+        top_p: 0.9,
         stream: false,
       }),
     });
 
     if (!groqResponse.ok) {
-      console.error('Groq API error:', groqResponse.status, groqResponse.statusText);
+      console.error('❌ Groq API error:', groqResponse.status, groqResponse.statusText);
       
-      // Enhanced fallback logic for development
-      const fallbackFile = getFallbackFile(message, availableAdventures);
+      // Use pre-determined file if Utah was detected
+      if (!recommendedFile) {
+        recommendedFile = getFallbackFile(message, availableAdventures);
+      }
+      
+      console.log('🔄 Using fallback file:', recommendedFile);
       
       return new Response(
         JSON.stringify({
           response: `I'd love to help you plan your adventure! Let me search our adventure database for the perfect match for your request!`,
           shouldSearch: true,
-          recommendedFile: fallbackFile,
+          recommendedFile: recommendedFile,
           extractedInfo: extractAdventureInfo(message)
         }),
         {
@@ -105,12 +117,14 @@ Example: For "Hiking in utah, 4 days, casual dining" you should recommend "moab-
     const aiData = await groqResponse.json();
     const aiResponse = aiData.choices[0]?.message?.content || '';
 
-    console.log('Groq AI Response:', aiResponse);
+    console.log('🤖 Groq AI Response:', aiResponse);
 
-    // Analyze the AI response to extract the recommended file
-    const recommendedFile = extractRecommendedFile(aiResponse, message, availableAdventures);
+    // Use pre-determined file if Utah was detected, otherwise extract from AI response
+    if (!recommendedFile) {
+      recommendedFile = extractRecommendedFile(aiResponse, message, availableAdventures);
+    }
     
-    console.log('Recommended file:', recommendedFile);
+    console.log('📁 Final recommended file:', recommendedFile);
     
     // Always trigger search for adventure data
     const shouldSearch = true;
@@ -135,7 +149,7 @@ Example: For "Hiking in utah, 4 days, casual dining" you should recommend "moab-
       }
     );
   } catch (error) {
-    console.error('Groq Chat API Error:', error);
+    console.error('❌ Groq Chat API Error:', error);
     return new Response(
       JSON.stringify({ error: 'Failed to process message' }),
       {
@@ -149,8 +163,9 @@ Example: For "Hiking in utah, 4 days, casual dining" you should recommend "moab-
 function getFallbackFile(userMessage: string, availableAdventures: any[]): string {
   const messageLower = userMessage.toLowerCase();
   
-  // Priority matching for specific locations
+  // CRITICAL: Priority matching for Utah
   if (messageLower.includes('utah') || messageLower.includes('moab')) {
+    console.log('🎯 Fallback detected Utah - returning moab-utah.json');
     return 'moab-utah.json';
   }
   if (messageLower.includes('colorado') || messageLower.includes('avon')) {
@@ -176,14 +191,22 @@ function getFallbackFile(userMessage: string, availableAdventures: any[]): strin
     }
   }
   
+  console.log('🔄 Fallback file selected:', bestMatch.file);
   return bestMatch.file;
 }
 
 function extractRecommendedFile(aiResponse: string, userMessage: string, availableAdventures: any[]): string {
-  // First, check if AI response mentions a specific file
+  // CRITICAL: Check user message for Utah first
+  const messageLower = userMessage.toLowerCase();
+  if (messageLower.includes('utah') || messageLower.includes('moab')) {
+    console.log('🎯 Extract function detected Utah - returning moab-utah.json');
+    return 'moab-utah.json';
+  }
+
+  // Check if AI response mentions a specific file
   for (const adventure of availableAdventures) {
     if (aiResponse.toLowerCase().includes(adventure.file.toLowerCase())) {
-      console.log(`Found file in AI response: ${adventure.file}`);
+      console.log(`📁 Found file in AI response: ${adventure.file}`);
       return adventure.file;
     }
   }
@@ -191,16 +214,16 @@ function extractRecommendedFile(aiResponse: string, userMessage: string, availab
   // Check for location names in AI response
   const responseLower = aiResponse.toLowerCase();
   if (responseLower.includes('moab') || responseLower.includes('utah')) {
-    console.log('Found Utah/Moab in AI response');
+    console.log('🎯 Found Utah/Moab in AI response');
     return 'moab-utah.json';
   }
   if (responseLower.includes('avon') || responseLower.includes('colorado')) {
-    console.log('Found Colorado/Avon in AI response');
+    console.log('🏔️ Found Colorado/Avon in AI response');
     return 'avon-colorado.json';
   }
 
   // Fallback to analyzing user message
-  console.log('Using fallback file matching for user message:', userMessage);
+  console.log('🔄 Using fallback file matching for user message:', userMessage);
   return getFallbackFile(userMessage, availableAdventures);
 }
 
