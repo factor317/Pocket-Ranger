@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import AiResponseDisplay from '../../components/AiResponseDisplay';
 
 interface LocationRecommendation {
   name: string;
@@ -42,7 +41,6 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const [aiResponse, setAiResponse] = useState<string>('');
-  const [showConversation, setShowConversation] = useState(false);
 
   // Reset state when returning to home
   useEffect(() => {
@@ -51,7 +49,6 @@ export default function HomeScreen() {
       setLoading(false);
       setConversation([]);
       setAiResponse('');
-      setShowConversation(false);
       
       // Clear global state
       global.currentRecommendation = null;
@@ -73,17 +70,20 @@ export default function HomeScreen() {
     setLoading(true);
     
     try {
-      // Process with AI for conversation
+      // Process with AI for conversation and get recommended file
       const aiResponse = await processWithAI(inputText);
       
       if (aiResponse.shouldSearch) {
-        // Search for adventure recommendations from data source
+        // Search for adventure recommendations from data source using the recommended file
         const response = await fetch('/api/pocPlan', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ userInput: inputText }),
+          body: JSON.stringify({ 
+            userInput: inputText,
+            recommendedFile: aiResponse.recommendedFile 
+          }),
         });
 
         if (!response.ok) {
@@ -101,7 +101,7 @@ export default function HomeScreen() {
       }
       
       // Update conversation with dynamic response based on user input
-      const dynamicResponse = generateDynamicResponse(inputText, aiResponse.response);
+      const dynamicResponse = generateDynamicResponse(inputText, aiResponse.response, aiResponse.recommendedFile);
       
       const newConversation = [
         ...conversation,
@@ -110,7 +110,6 @@ export default function HomeScreen() {
       ];
       setConversation(newConversation);
       setAiResponse(dynamicResponse);
-      setShowConversation(true);
       
     } catch (error) {
       Alert.alert('Error', 'Failed to get recommendation. Please try again.');
@@ -120,32 +119,28 @@ export default function HomeScreen() {
     }
   };
 
-  const generateDynamicResponse = (userInput: string, baseResponse: string) => {
-    // Extract location and activity from user input
-    const input = userInput.toLowerCase();
+  const generateDynamicResponse = (userInput: string, baseResponse: string, recommendedFile?: string) => {
+    // Extract location from recommended file
     let location = '';
-    let activity = '';
-    
-    // Extract location mentions
-    if (input.includes('avon') || input.includes('colorado')) {
-      location = 'Avon, Colorado';
-    } else if (input.includes('madison')) {
-      location = 'Madison area';
-    } else if (input.includes('milwaukee')) {
-      location = 'Milwaukee';
-    } else if (input.includes('moab') || input.includes('utah')) {
-      location = 'Moab, Utah';
-    } else if (input.includes('glacier') || input.includes('montana')) {
-      location = 'Glacier National Park';
-    } else if (input.includes('tahoe') || input.includes('california')) {
-      location = 'Lake Tahoe';
-    } else if (input.includes('sedona') || input.includes('arizona')) {
-      location = 'Sedona, Arizona';
-    } else if (input.includes('asheville') || input.includes('north carolina')) {
-      location = 'Asheville, North Carolina';
+    if (recommendedFile) {
+      const fileMap: { [key: string]: string } = {
+        'avon-colorado.json': 'Avon, Colorado',
+        'moab-utah.json': 'Moab, Utah',
+        'glacier-montana.json': 'Glacier National Park, Montana',
+        'lake-tahoe.json': 'Lake Tahoe, California',
+        'sedona-arizona.json': 'Sedona, Arizona',
+        'asheville-north-carolina.json': 'Asheville, North Carolina',
+        'olympic-washington.json': 'Olympic Peninsula, Washington',
+        'acadia-maine.json': 'Acadia National Park, Maine',
+        'big-sur-california.json': 'Big Sur, California',
+        'great-smoky-mountains.json': 'Great Smoky Mountains, Tennessee'
+      };
+      location = fileMap[recommendedFile] || '';
     }
-    
-    // Extract activity type
+
+    // Extract activity type from user input
+    const input = userInput.toLowerCase();
+    let activity = '';
     if (input.includes('hik')) {
       activity = 'hiking';
     } else if (input.includes('fish')) {
@@ -199,13 +194,10 @@ export default function HomeScreen() {
       return {
         response: "I'd love to help you plan your adventure! Let me search for some great options for you.",
         shouldSearch: true,
+        recommendedFile: 'avon-colorado.json',
         extractedInfo: {}
       };
     }
-  };
-
-  const toggleConversation = () => {
-    setShowConversation(!showConversation);
   };
 
   return (
@@ -250,13 +242,12 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* AI Response Component */}
-          <AiResponseDisplay
-            aiResponse={aiResponse}
-            conversation={conversation}
-            showConversation={showConversation}
-            toggleConversation={toggleConversation}
-          />
+          {/* AI Response Display */}
+          {aiResponse && (
+            <View style={styles.aiResponseContainer}>
+              <Text style={styles.aiResponseText}>{aiResponse}</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -341,5 +332,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.15,
+  },
+  aiResponseContainer: {
+    margin: 16,
+    backgroundColor: '#f8faf9',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e8f0ea',
+  },
+  aiResponseText: {
+    fontSize: 15,
+    color: '#121714',
+    lineHeight: 22,
+    fontWeight: '400',
   },
 });

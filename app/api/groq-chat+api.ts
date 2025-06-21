@@ -12,6 +12,20 @@ export async function POST(request: Request) {
       );
     }
 
+    // List of available adventure files
+    const availableAdventures = [
+      { file: 'avon-colorado.json', keywords: ['avon', 'colorado', 'vail', 'beaver creek', 'skiing', 'mountain', 'high country', 'brewery', 'bison burger'] },
+      { file: 'moab-utah.json', keywords: ['moab', 'utah', 'red rock', 'arches', 'desert', 'delicate arch', 'canyonlands'] },
+      { file: 'glacier-montana.json', keywords: ['glacier', 'montana', 'national park', 'alpine', 'hidden lake', 'logan pass', 'going to the sun'] },
+      { file: 'lake-tahoe.json', keywords: ['tahoe', 'california', 'nevada', 'alpine lake', 'emerald bay', 'eagle falls'] },
+      { file: 'sedona-arizona.json', keywords: ['sedona', 'arizona', 'red rock', 'cathedral rock', 'bell rock', 'vortex', 'energy'] },
+      { file: 'asheville-north-carolina.json', keywords: ['asheville', 'north carolina', 'blue ridge', 'appalachian', 'brewery', 'looking glass falls'] },
+      { file: 'olympic-washington.json', keywords: ['olympic', 'washington', 'peninsula', 'rainforest', 'hurricane ridge', 'temperate'] },
+      { file: 'acadia-maine.json', keywords: ['acadia', 'maine', 'bar harbor', 'cadillac mountain', 'coastal', 'lobster', 'atlantic'] },
+      { file: 'big-sur-california.json', keywords: ['big sur', 'california', 'mcway falls', 'bixby bridge', 'coastal', 'redwood', 'pacific'] },
+      { file: 'great-smoky-mountains.json', keywords: ['smoky mountains', 'tennessee', 'gatlinburg', 'laurel falls', 'cataract falls', 'appalachian'] }
+    ];
+
     // Groq API integration with Llama 3.1
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -24,32 +38,32 @@ export async function POST(request: Request) {
         messages: [
           {
             role: 'system',
-            content: `You are a helpful outdoor adventure planning assistant for Pocket Ranger. Your job is to understand user requests for outdoor activities and extract key information to help plan their adventure.
+            content: `You are a helpful outdoor adventure planning assistant for Pocket Ranger. Your job is to understand user requests for outdoor activities and determine which adventure location best matches their request.
 
-Extract the following information from user requests:
-- Activity type (hiking, fishing, camping, etc.)
-- Location preferences (city, state, region)
-- Duration (day trip, weekend, week, etc.)
-- Difficulty preferences (easy, moderate, challenging)
-- Special requirements (waterfalls, breweries, restaurants, etc.)
-- Group size and composition
-- Time of year/season
+Available adventure locations:
+1. avon-colorado.json - Avon, Colorado (hiking, breweries, bison burgers, Vail Valley, Beaver Creek, high country)
+2. moab-utah.json - Moab, Utah (red rock hiking, desert exploration, Arches National Park, Delicate Arch)
+3. glacier-montana.json - Glacier National Park, Montana (alpine lakes, mountain views, Hidden Lake, Logan Pass)
+4. lake-tahoe.json - Lake Tahoe, California (alpine hiking, scenic drives, Emerald Bay, Eagle Falls)
+5. sedona-arizona.json - Sedona, Arizona (red rock formations, energy vortexes, Cathedral Rock, Bell Rock)
+6. asheville-north-carolina.json - Asheville, North Carolina (Blue Ridge Mountains, craft breweries, Looking Glass Falls)
+7. olympic-washington.json - Olympic Peninsula, Washington (rainforests, coastal views, Hurricane Ridge)
+8. acadia-maine.json - Acadia National Park, Maine (coastal hiking, lobster dining, Cadillac Mountain)
+9. big-sur-california.json - Big Sur, California (coastal wilderness, McWay Falls, Bixby Bridge, redwood forests)
+10. great-smoky-mountains.json - Great Smoky Mountains, Tennessee (waterfalls, mountain culture, Laurel Falls)
 
-Respond in a conversational, enthusiastic tone. If the user's request is unclear, ask clarifying questions. Always aim to be helpful and encouraging about their outdoor adventure plans.
+Analyze the user's request and determine which adventure file best matches their interests. Consider:
+- Geographic location mentioned
+- Activity type (hiking, breweries, coastal, desert, etc.)
+- Specific landmarks or features mentioned
+- Duration and difficulty preferences
 
-Available adventure locations in our database:
-- Avon, Colorado (hiking, breweries, bison burgers)
-- Moab, Utah (red rock hiking, desert exploration)
-- Glacier National Park, Montana (alpine lakes, mountain views)
-- Lake Tahoe, California (alpine hiking, scenic drives)
-- Sedona, Arizona (red rock formations, energy vortexes)
-- Asheville, North Carolina (Blue Ridge Mountains, craft breweries)
-- Olympic Peninsula, Washington (rainforests, coastal views)
-- Acadia National Park, Maine (coastal hiking, lobster dining)
-- Big Sur, California (coastal wilderness, redwood forests)
-- Great Smoky Mountains, Tennessee (waterfalls, mountain culture)
+Respond with:
+1. The exact filename of the best matching adventure (e.g., "avon-colorado.json")
+2. A brief explanation of why this location matches their request
+3. Set shouldSearch to true to trigger loading the adventure data
 
-If a user mentions a location not in our database, suggest the closest match or ask if they'd be interested in similar alternatives.`
+If no clear match exists, default to "avon-colorado.json".`
           },
           ...conversationHistory,
           {
@@ -57,8 +71,8 @@ If a user mentions a location not in our database, suggest the closest match or 
             content: message
           }
         ],
-        temperature: 0.7,
-        max_tokens: 500,
+        temperature: 0.3,
+        max_tokens: 300,
         top_p: 1,
         stream: false,
       }),
@@ -71,14 +85,13 @@ If a user mentions a location not in our database, suggest the closest match or 
       if (process.env.NODE_ENV === 'development') {
         return new Response(
           JSON.stringify({
-            response: "I'd love to help you plan a hiking adventure! It sounds like you're looking for a scenic hike with a waterfall near Brookfield. Let me search our adventure database for the perfect match for your Saturday adventure!",
+            response: "I'd love to help you plan your adventure! Let me search our adventure database for the perfect match for your request!",
             shouldSearch: true,
+            recommendedFile: 'avon-colorado.json',
             extractedInfo: {
               activity: 'hiking',
-              location: 'Brookfield',
-              features: ['waterfall'],
-              timeframe: 'Saturday',
-              duration: 'day trip'
+              location: 'Colorado',
+              timeframe: 'weekend'
             }
           }),
           {
@@ -99,14 +112,18 @@ If a user mentions a location not in our database, suggest the closest match or 
     const aiData = await groqResponse.json();
     const aiResponse = aiData.choices[0]?.message?.content || '';
 
-    // Analyze if we should trigger a search
-    const shouldSearch = analyzeForSearch(message, aiResponse);
+    // Analyze the AI response to extract the recommended file
+    const recommendedFile = extractRecommendedFile(aiResponse, message, availableAdventures);
+    
+    // Always trigger search for adventure data
+    const shouldSearch = true;
     const extractedInfo = extractAdventureInfo(message);
 
     return new Response(
       JSON.stringify({
         response: aiResponse,
         shouldSearch,
+        recommendedFile,
         extractedInfo,
         conversationId: Date.now().toString(),
       }),
@@ -132,14 +149,34 @@ If a user mentions a location not in our database, suggest the closest match or 
   }
 }
 
-function analyzeForSearch(userMessage: string, aiResponse: string): boolean {
-  const searchTriggers = [
-    'find', 'search', 'recommend', 'suggest', 'plan', 'adventure',
-    'hiking', 'fishing', 'camping', 'explore', 'visit', 'go to'
-  ];
+function extractRecommendedFile(aiResponse: string, userMessage: string, availableAdventures: any[]): string {
+  // First, check if AI response mentions a specific file
+  for (const adventure of availableAdventures) {
+    if (aiResponse.toLowerCase().includes(adventure.file.toLowerCase())) {
+      return adventure.file;
+    }
+  }
+
+  // If no file mentioned in AI response, analyze user message for keywords
+  const messageLower = userMessage.toLowerCase();
   
-  const message = userMessage.toLowerCase();
-  return searchTriggers.some(trigger => message.includes(trigger));
+  // Score each adventure based on keyword matches
+  let bestMatch = { file: 'avon-colorado.json', score: 0 };
+  
+  for (const adventure of availableAdventures) {
+    let score = 0;
+    for (const keyword of adventure.keywords) {
+      if (messageLower.includes(keyword.toLowerCase())) {
+        score += keyword.length; // Longer keywords get higher weight
+      }
+    }
+    
+    if (score > bestMatch.score) {
+      bestMatch = { file: adventure.file, score };
+    }
+  }
+  
+  return bestMatch.file;
 }
 
 function extractAdventureInfo(message: string): any {
@@ -160,7 +197,7 @@ function extractAdventureInfo(message: string): any {
     'avon', 'colorado', 'moab', 'utah', 'glacier', 'montana',
     'tahoe', 'california', 'sedona', 'arizona', 'asheville',
     'north carolina', 'olympic', 'washington', 'acadia', 'maine',
-    'big sur', 'smoky mountains', 'tennessee', 'brookfield'
+    'big sur', 'smoky mountains', 'tennessee'
   ];
   
   for (const location of locations) {
