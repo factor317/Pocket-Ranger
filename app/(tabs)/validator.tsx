@@ -1,71 +1,61 @@
 import React from 'react';
 import RealTextNodeValidator from '../../components/RealTextNodeValidator';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TriangleAlert as AlertTriangle } from 'lucide-react-native';
-
-// Test component with REAL text node issues
-function TestComponent() {
-  const userName = "John Doe";
-  const showMessage = true;
-  
-  return (
-    <View style={styles.testContainer}>
-      <Text style={styles.testTitle}>Real Text Node Test</Text>
-      
-      {/* This WILL cause a text node error */}
-      <View style={styles.problemView}>
-        This text is directly in a View - REAL ERROR!
-      </View>
-      
-      {/* This WILL cause a conditional text error */}
-      <View style={styles.problemView}>
-        {showMessage && "This conditional text is problematic"}
-      </View>
-      
-      {/* This WILL cause a variable text error */}
-      <View style={styles.problemView}>
-        {userName}
-      </View>
-      
-      {/* This is CORRECT */}
-      <View style={styles.correctView}>
-        <Text style={styles.correctText}>This text is properly wrapped!</Text>
-      </View>
-    </View>
-  );
-}
+import { Shield } from 'lucide-react-native';
 
 export default function ValidatorTab() {
   return (
     <RealTextNodeValidator enabled={true} autoScan={true}>
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <AlertTriangle size={24} color="#dc2626" />
-          <Text style={styles.title}>REAL Text Node Validator</Text>
+          <Shield size={24} color="#10b981" />
+          <Text style={styles.title}>Text Node Validator</Text>
         </View>
         
         <View style={styles.content}>
           <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>🎯 This is a REAL validator!</Text>
+            <Text style={styles.infoTitle}>🎯 Real-Time Text Node Detection</Text>
             <Text style={styles.infoText}>
               This validator scans your actual DOM and finds genuine text node errors. 
-              No mock data - it analyzes the real component tree!
+              It analyzes the real component tree and detects issues in real-time.
             </Text>
             <Text style={styles.infoText}>
               Look for the red floating button in the top-right corner. 
-              It will show the actual number of text node issues found.
+              It will show the actual number of text node issues found in your app.
             </Text>
           </View>
 
-          <TestComponent />
-
-          <View style={styles.warningCard}>
-            <Text style={styles.warningTitle}>⚠️ Expected Behavior</Text>
-            <Text style={styles.warningText}>
-              The test component above contains REAL text node errors. 
-              The validator should detect them and show them in the overlay.
+          <View style={styles.instructionsCard}>
+            <Text style={styles.instructionsTitle}>📋 How to Use</Text>
+            <Text style={styles.instructionItem}>
+              • Tap the floating eye button to open the validator overlay
             </Text>
+            <Text style={styles.instructionItem}>
+              • View real-time issues as they're detected
+            </Text>
+            <Text style={styles.instructionItem}>
+              • Tap any issue to see detailed fix information
+            </Text>
+            <Text style={styles.instructionItem}>
+              • Copy fixes directly to your clipboard
+            </Text>
+            <Text style={styles.instructionItem}>
+              • Issues update automatically as you code
+            </Text>
+          </View>
+
+          <View style={styles.statusCard}>
+            <Text style={styles.statusTitle}>✅ Clean Component Example</Text>
+            <Text style={styles.statusDescription}>
+              This validator tab contains no test data and will only show real issues 
+              found in your actual application components.
+            </Text>
+            <View style={styles.cleanExample}>
+              <Text style={styles.cleanExampleText}>
+                All text in this component is properly wrapped in Text components.
+              </Text>
+            </View>
           </View>
         </View>
       </SafeAreaView>
@@ -90,7 +80,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#dc2626',
+    color: '#0e1a13',
   },
   content: {
     flex: 1,
@@ -116,55 +106,55 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 8,
   },
-  testContainer: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#e8f2ec',
-  },
-  testTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#0e1a13',
-    marginBottom: 16,
-  },
-  problemView: {
-    backgroundColor: '#fef2f2',
-    borderWidth: 1,
-    borderColor: '#fecaca',
-    borderRadius: 6,
-    padding: 12,
-    marginBottom: 12,
-  },
-  correctView: {
+  instructionsCard: {
     backgroundColor: '#f0fdf4',
     borderWidth: 1,
     borderColor: '#bbf7d0',
-    borderRadius: 6,
-    padding: 12,
-  },
-  correctText: {
-    color: '#15803d',
-    fontSize: 14,
-  },
-  warningCard: {
-    backgroundColor: '#fffbeb',
-    borderWidth: 1,
-    borderColor: '#fed7aa',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
+    marginBottom: 20,
   },
-  warningTitle: {
+  instructionsTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#d97706',
+    color: '#15803d',
+    marginBottom: 12,
+  },
+  instructionItem: {
+    fontSize: 14,
+    color: '#166534',
+    lineHeight: 20,
+    marginBottom: 4,
+  },
+  statusCard: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e8f2ec',
+    borderRadius: 12,
+    padding: 16,
+  },
+  statusTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0e1a13',
     marginBottom: 8,
   },
-  warningText: {
+  statusDescription: {
     fontSize: 14,
-    color: '#92400e',
+    color: '#51946c',
     lineHeight: 20,
+    marginBottom: 12,
+  },
+  cleanExample: {
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    borderRadius: 8,
+    padding: 12,
+  },
+  cleanExampleText: {
+    fontSize: 14,
+    color: '#15803d',
+    textAlign: 'center',
   },
 });

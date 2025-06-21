@@ -39,8 +39,6 @@ export default function RealTextNodeValidator({
   const scanForTextNodes = () => {
     if (typeof document === 'undefined') {
       console.warn('RealTextNodeValidator: DOM not available (running on native?)');
-      // For React Native, create mock issues based on common patterns
-      createMockIssuesForNative();
       return;
     }
 
@@ -128,84 +126,6 @@ export default function RealTextNodeValidator({
     }
 
     setIssues(foundIssues);
-    setScanCount(prev => prev + 1);
-    setIsScanning(false);
-  };
-
-  // Create mock issues for React Native environment
-  const createMockIssuesForNative = () => {
-    setIsScanning(true);
-    
-    // Simulate finding real issues based on the screenshot you showed
-    const mockIssues: TextNodeIssue[] = [
-      {
-        id: `${Date.now()}-1`,
-        type: 'direct-text',
-        element: null,
-        textContent: "This text is directly in a View - REAL ERROR!",
-        parentElement: "DIV.css-view-g5y9jx.r-backgroundColor-1jo552",
-        xpath: "div.css-view > div.css-view > text-node",
-        severity: 'error',
-        timestamp: Date.now(),
-        fileName: 'app/(tabs)/validator.tsx',
-        lineNumber: 45,
-        fix: '<View><Text>This text is directly in a View - REAL ERROR!</Text></View>'
-      },
-      {
-        id: `${Date.now()}-2`,
-        type: 'conditional-string',
-        element: null,
-        textContent: "This conditional text is problematic",
-        parentElement: "DIV.css-view-g5y9jx.r-backgroundColor-1jo552",
-        xpath: "div.css-view > div.css-view > conditional-text",
-        severity: 'error',
-        timestamp: Date.now(),
-        fileName: 'app/(tabs)/validator.tsx',
-        lineNumber: 52,
-        fix: '{showMessage && <Text>This conditional text is problematic</Text>}'
-      },
-      {
-        id: `${Date.now()}-3`,
-        type: 'variable-string',
-        element: null,
-        textContent: "John Doe",
-        parentElement: "DIV.css-view-g5y9jx.r-backgroundColor-1jo552",
-        xpath: "div.css-view > div.css-view > variable-text",
-        severity: 'error',
-        timestamp: Date.now(),
-        fileName: 'app/(tabs)/validator.tsx',
-        lineNumber: 58,
-        fix: '<View><Text>{userName}</Text></View>'
-      },
-      {
-        id: `${Date.now()}-4`,
-        type: 'conditional-string',
-        element: null,
-        textContent: "Planning...",
-        parentElement: "DIV.css-text-146c3p1.r-color-121714",
-        xpath: "div.css-view > text > conditional-text",
-        severity: 'warning',
-        timestamp: Date.now(),
-        fileName: 'app/(tabs)/index.tsx',
-        lineNumber: 123,
-        fix: '{loading ? <Text>Planning...</Text> : <Text>Plan</Text>}'
-      },
-      {
-        id: `${Date.now()}-5`,
-        type: 'conditional-string',
-        element: null,
-        textContent: "Hide Conversation",
-        parentElement: "DIV.css-text-146c3p1.r-color-688273",
-        xpath: "div.css-view > text > conditional-text",
-        severity: 'warning',
-        timestamp: Date.now(),
-        fileName: 'app/(tabs)/index.tsx',
-        lineNumber: 156,
-        fix: '{showConversation ? <Text>Hide</Text> : <Text>Show</Text>} Conversation'
-      }
-    ];
-
-    setIssues(mockIssues);
     setScanCount(prev => prev + 1);
     setIsScanning(false);
   };
@@ -471,8 +391,11 @@ Time Found: ${new Date(issue.timestamp).toLocaleString()}
               <View style={styles.infoCard}>
                 <Text style={styles.infoTitle}>🎯 REAL Text Node Detection</Text>
                 <Text style={styles.infoText}>
-                  This validator found {issues.length} actual text node issues in your app! 
-                  These are the EXACT problems causing your "Unexpected text node" errors.
+                  This validator scans your actual DOM and finds genuine text node issues. 
+                  {issues.length > 0 ? 
+                    ` Found ${issues.length} real issues that need fixing!` : 
+                    ' No issues detected - your components are clean!'
+                  }
                 </Text>
                 <Text style={styles.infoText}>
                   • Tap any issue to see the fix{'\n'}
@@ -483,27 +406,29 @@ Time Found: ${new Date(issue.timestamp).toLocaleString()}
               </View>
 
               {/* Quick Actions */}
-              <View style={styles.quickActions}>
-                <TouchableOpacity 
-                  style={styles.actionButton}
-                  onPress={() => {
-                    const allFixes = issues.map(issue => 
-                      `// ${issue.fileName}:${issue.lineNumber || '?'}\n// Problem: "${issue.textContent}"\n// Fix: ${issue.fix}`
-                    ).join('\n\n');
-                    Alert.alert('All Fixes', allFixes);
-                  }}
-                >
-                  <Copy size={16} color="#ffffff" />
-                  <Text style={styles.actionButtonText}>Copy All Fixes</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  style={[styles.actionButton, styles.actionButtonSecondary]}
-                  onPress={() => setIssues([])}
-                >
-                  <Text style={styles.actionButtonTextSecondary}>Clear Issues</Text>
-                </TouchableOpacity>
-              </View>
+              {issues.length > 0 && (
+                <View style={styles.quickActions}>
+                  <TouchableOpacity 
+                    style={styles.actionButton}
+                    onPress={() => {
+                      const allFixes = issues.map(issue => 
+                        `// ${issue.fileName}:${issue.lineNumber || '?'}\n// Problem: "${issue.textContent}"\n// Fix: ${issue.fix}`
+                      ).join('\n\n');
+                      Alert.alert('All Fixes', allFixes);
+                    }}
+                  >
+                    <Copy size={16} color="#ffffff" />
+                    <Text style={styles.actionButtonText}>Copy All Fixes</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[styles.actionButton, styles.actionButtonSecondary]}
+                    onPress={() => setIssues([])}
+                  >
+                    <Text style={styles.actionButtonTextSecondary}>Clear Issues</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </ScrollView>
           </SafeAreaView>
         </View>
