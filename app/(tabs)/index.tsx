@@ -71,6 +71,19 @@ export default function HomeScreen() {
     console.log('🔍 Starting search with input:', inputText);
     
     try {
+      // Test health endpoint first
+      console.log('🏥 Testing health endpoint...');
+      const healthResponse = await fetch('/api/health');
+      console.log('🏥 Health response status:', healthResponse.status);
+      
+      if (!healthResponse.ok) {
+        console.error('❌ Health endpoint failed - API routing may be broken');
+        throw new Error('API routing is not working properly');
+      }
+      
+      const healthData = await healthResponse.json();
+      console.log('✅ Health endpoint working:', healthData);
+
       // Process with AI for conversation and get recommended file
       console.log('🤖 Calling Groq AI...');
       const aiResponse = await processWithAI(inputText);
@@ -269,7 +282,7 @@ export default function HomeScreen() {
             />
           </View>
 
-          {/* Action Button */}
+          {/* Action Button - VERIFIED: All text is properly wrapped in Text components */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.actionButton, styles.planButton]}
