@@ -1,65 +1,62 @@
 import React from 'react';
-import ComponentValidator from '../../components/ComponentValidator';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Shield } from 'lucide-react-native';
 
 export default function ValidatorTab() {
   return (
-    <ComponentValidator enabled={true} autoScan={true}>
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Shield size={24} color="#10b981" />
-          <Text style={styles.title}>Text Node Validator</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Shield size={24} color="#10b981" />
+        <Text style={styles.title}>Text Node Validator</Text>
+      </View>
+      
+      <View style={styles.content}>
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>🎯 Real-Time Text Node Detection</Text>
+          <Text style={styles.infoText}>
+            This validator scans your actual DOM and finds genuine text node errors. 
+            It analyzes the real component tree and detects issues in real-time.
+          </Text>
+          <Text style={styles.infoText}>
+            Look for the red floating button in the top-right corner. 
+            It will show the actual number of text node issues found in your app.
+          </Text>
         </View>
-        
-        <View style={styles.content}>
-          <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>🎯 Real-Time Text Node Detection</Text>
-            <Text style={styles.infoText}>
-              This validator scans your actual DOM and finds genuine text node errors. 
-              It analyzes the real component tree and detects issues in real-time.
-            </Text>
-            <Text style={styles.infoText}>
-              Look for the red floating button in the top-right corner. 
-              It will show the actual number of text node issues found in your app.
-            </Text>
-          </View>
 
-          <View style={styles.instructionsCard}>
-            <Text style={styles.instructionsTitle}>📋 How to Use</Text>
-            <Text style={styles.instructionItem}>
-              • Tap the floating eye button to open the validator overlay
-            </Text>
-            <Text style={styles.instructionItem}>
-              • View real-time issues as they're detected
-            </Text>
-            <Text style={styles.instructionItem}>
-              • Tap any issue to see detailed fix information
-            </Text>
-            <Text style={styles.instructionItem}>
-              • Copy fixes directly to your clipboard
-            </Text>
-            <Text style={styles.instructionItem}>
-              • Issues update automatically as you code
-            </Text>
-          </View>
+        <View style={styles.instructionsCard}>
+          <Text style={styles.instructionsTitle}>📋 How to Use</Text>
+          <Text style={styles.instructionItem}>
+            • Tap the floating eye button to open the validator overlay
+          </Text>
+          <Text style={styles.instructionItem}>
+            • View real-time issues as they're detected
+          </Text>
+          <Text style={styles.instructionItem}>
+            • Tap any issue to see detailed fix information
+          </Text>
+          <Text style={styles.instructionItem}>
+            • Copy fixes directly to your clipboard
+          </Text>
+          <Text style={styles.instructionItem}>
+            • Issues update automatically as you code
+          </Text>
+        </View>
 
-          <View style={styles.statusCard}>
-            <Text style={styles.statusTitle}>✅ Clean Component Example</Text>
-            <Text style={styles.statusDescription}>
-              This validator tab contains no test data and will only show real issues 
-              found in your actual application components.
+        <View style={styles.statusCard}>
+          <Text style={styles.statusTitle}>✅ Clean Component Example</Text>
+          <Text style={styles.statusDescription}>
+            This validator tab contains no test data and will only show real issues 
+            found in your actual application components.
+          </Text>
+          <View style={styles.cleanExample}>
+            <Text style={styles.cleanExampleText}>
+              All text in this component is properly wrapped in Text components.
             </Text>
-            <View style={styles.cleanExample}>
-              <Text style={styles.cleanExampleText}>
-                All text in this component is properly wrapped in Text components.
-              </Text>
-            </View>
           </View>
         </View>
-      </SafeAreaView>
-    </ComponentValidator>
+      </View>
+    </SafeAreaView>
   );
 }
 
