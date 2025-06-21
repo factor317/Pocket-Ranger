@@ -11,8 +11,8 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import AiResponseDisplay from '../../components/AiResponseDisplay';
-import RecommendationDisplay from '../../components/RecommendationDisplay';
 
 interface LocationRecommendation {
   name: string;
@@ -37,9 +37,8 @@ interface ConversationMessage {
   timestamp: number;
 }
 
-export default function ExploreScreen() {
+export default function HomeScreen() {
   const [userInput, setUserInput] = useState('');
-  const [recommendation, setRecommendation] = useState<LocationRecommendation | null>(null);
   const [loading, setLoading] = useState(false);
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const [aiResponse, setAiResponse] = useState<string>('');
@@ -56,11 +55,11 @@ export default function ExploreScreen() {
     setLoading(true);
     
     try {
-      // First, process with Groq AI for conversation
+      // Process with AI for conversation
       const aiResponse = await processWithAI(inputText);
       
       if (aiResponse.shouldSearch) {
-        // Then search for adventure recommendations
+        // Search for adventure recommendations
         const response = await fetch('/api/pocPlan', {
           method: 'POST',
           headers: {
@@ -74,17 +73,25 @@ export default function ExploreScreen() {
         }
 
         const data = await response.json();
-        setRecommendation(data);
+        
+        // Store the recommendation globally and navigate to itinerary
+        global.currentRecommendation = data;
+        global.isUnsavedItinerary = true;
+        
+        // Navigate to itinerary tab to show results
+        router.push('/itinerary');
       }
       
-      // Update conversation
+      // Update conversation with dynamic response based on user input
+      const dynamicResponse = generateDynamicResponse(inputText, aiResponse.response);
+      
       const newConversation = [
         ...conversation,
         { role: 'user' as const, content: inputText, timestamp: Date.now() },
-        { role: 'assistant' as const, content: aiResponse.response, timestamp: Date.now() + 1 }
+        { role: 'assistant' as const, content: dynamicResponse, timestamp: Date.now() + 1 }
       ];
       setConversation(newConversation);
-      setAiResponse(aiResponse.response);
+      setAiResponse(dynamicResponse);
       setShowConversation(true);
       
     } catch (error) {
@@ -93,6 +100,40 @@ export default function ExploreScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const generateDynamicResponse = (userInput: string, baseResponse: string) => {
+    // Extract location and activity from user input
+    const input = userInput.toLowerCase();
+    let location = '';
+    let activity = '';
+    
+    // Simple extraction logic
+    if (input.includes('avon') || input.includes('colorado')) {
+      location = 'Avon, Colorado';
+    } else if (input.includes('madison')) {
+      location = 'Madison area';
+    } else if (input.includes('milwaukee')) {
+      location = 'Milwaukee';
+    }
+    
+    if (input.includes('hik')) {
+      activity = 'hiking';
+    } else if (input.includes('fish')) {
+      activity = 'fishing';
+    } else if (input.includes('explor')) {
+      activity = 'exploration';
+    }
+
+    // Generate contextual response
+    let contextualResponse = `Great choice! I've found some amazing ${activity} opportunities`;
+    if (location) {
+      contextualResponse += ` in ${location}`;
+    }
+    contextualResponse += '. I\'ve created a detailed itinerary for you with scheduled activities and partner recommendations. ';
+    contextualResponse += 'Tap on the Itinerary tab to view your personalized adventure plan!';
+    
+    return contextualResponse;
   };
 
   const processWithAI = async (message: string) => {
@@ -121,13 +162,6 @@ export default function ExploreScreen() {
         extractedInfo: {}
       };
     }
-  };
-
-  const handleNewSearch = () => {
-    setRecommendation(null);
-    setUserInput('');
-    setShowConversation(false);
-    setAiResponse('');
   };
 
   const toggleConversation = () => {
@@ -182,12 +216,6 @@ export default function ExploreScreen() {
             conversation={conversation}
             showConversation={showConversation}
             toggleConversation={toggleConversation}
-          />
-
-          {/* Adventure Recommendation Component */}
-          <RecommendationDisplay
-            recommendation={recommendation}
-            onNewSearch={handleNewSearch}
           />
         </View>
       </ScrollView>

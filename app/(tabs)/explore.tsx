@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  Linking,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,45 +17,69 @@ interface Recommendation {
   title: string;
   description: string;
   imageUrl: string;
+  adventureFile: string;
 }
 
 const recommendations: Recommendation[] = [
   {
     id: '1',
-    title: 'Yosemite National Park',
-    description: 'Explore the iconic granite cliffs and giant sequoia trees of Yosemite Valley.',
+    title: 'Avon Colorado Adventure',
+    description: 'Experience the best of Colorado\'s high country with scenic hikes, craft breweries, and local cuisine.',
     imageUrl: 'https://images.pexels.com/photos/2743287/pexels-photo-2743287.jpeg?auto=compress&cs=tinysrgb&w=800',
+    adventureFile: 'avon-colorado.json',
   },
   {
     id: '2',
-    title: 'Zion National Park',
-    description: 'Hike through the narrow canyons and towering sandstone cliffs of Zion.',
+    title: 'Moab Desert Adventure',
+    description: 'Explore stunning red rock landscapes with iconic arches and desert trails.',
     imageUrl: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=800',
+    adventureFile: 'moab-utah.json',
   },
   {
     id: '3',
-    title: 'Grand Canyon National Park',
-    description: 'Witness the breathtaking views of the Grand Canyon\'s vast expanse.',
+    title: 'Glacier National Park',
+    description: 'Discover pristine wilderness with alpine lakes and dramatic mountain peaks.',
     imageUrl: 'https://images.pexels.com/photos/1770809/pexels-photo-1770809.jpeg?auto=compress&cs=tinysrgb&w=800',
+    adventureFile: 'glacier-montana.json',
   },
   {
     id: '4',
     title: 'Acadia National Park',
-    description: 'Discover the rugged coastline and granite peaks of Acadia in Maine.',
+    description: 'Experience rugged coastline and granite peaks in Maine\'s only national park.',
     imageUrl: 'https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg?auto=compress&cs=tinysrgb&w=800',
+    adventureFile: 'acadia-maine.json',
   },
 ];
 
 export default function ExploreScreen() {
-  const handleRecommendationPress = (recommendation: Recommendation) => {
-    Alert.alert(
-      recommendation.title,
-      `Would you like to learn more about ${recommendation.title}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Learn More', onPress: () => console.log('Learn more about', recommendation.title) },
-      ]
-    );
+  const handleRecommendationPress = async (recommendation: Recommendation) => {
+    try {
+      // Fetch the adventure data
+      const response = await fetch('/api/pocPlan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userInput: recommendation.title }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch adventure data');
+      }
+
+      const adventureData = await response.json();
+      
+      // Store the recommendation globally and navigate to itinerary
+      global.currentRecommendation = adventureData;
+      global.isUnsavedItinerary = true;
+      
+      // Navigate to itinerary tab to show results
+      router.push('/itinerary');
+      
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load adventure details. Please try again.');
+      console.error('Adventure loading error:', error);
+    }
   };
 
   return (
