@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Home, Search, Map, User } from 'lucide-react-native';
+import { Chrome as Home, Search, Map, User } from 'lucide-react-native';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
