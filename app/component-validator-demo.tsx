@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ComponentValidator from '../components/ComponentValidator';
-import { AlertTriangle, CheckCircle } from 'lucide-react-native';
+import { TriangleAlert as AlertTriangle, CircleCheck as CheckCircle } from 'lucide-react-native';
 
 // Demo component with intentional text node issues
 function ProblematicComponent({ showIssues }: { showIssues: boolean }) {

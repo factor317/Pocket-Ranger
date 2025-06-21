@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Eye, EyeOff, AlertTriangle, CheckCircle, Search, Settings } from 'lucide-react-native';
+import { Eye, EyeOff, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, Search, Settings } from 'lucide-react-native';
 
 interface ValidationRule {
   id: string;
