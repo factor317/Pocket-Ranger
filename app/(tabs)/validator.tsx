@@ -1,12 +1,12 @@
 import React from 'react';
-import RealTextNodeValidator from '../../components/RealTextNodeValidator';
+import ComponentValidator from '../../components/ComponentValidator';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Shield } from 'lucide-react-native';
 
 export default function ValidatorTab() {
   return (
-    <RealTextNodeValidator enabled={true} autoScan={true}>
+    <ComponentValidator enabled={true} autoScan={true}>
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <Shield size={24} color="#10b981" />
@@ -59,7 +59,7 @@ export default function ValidatorTab() {
           </View>
         </View>
       </SafeAreaView>
-    </RealTextNodeValidator>
+    </ComponentValidator>
   );
 }
 
