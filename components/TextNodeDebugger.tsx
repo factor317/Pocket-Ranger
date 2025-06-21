@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AlertTriangle, CheckCircle, XCircle, Search, RefreshCw } from 'lucide-react-native';
+import { TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, Circle as XCircle, Search, RefreshCw } from 'lucide-react-native';
 
 interface DebugIssue {
   id: string;
