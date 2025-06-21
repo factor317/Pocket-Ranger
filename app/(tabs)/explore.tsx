@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -20,54 +20,75 @@ interface Recommendation {
   adventureFile: string;
 }
 
-const recommendations: Recommendation[] = [
-  {
-    id: '1',
-    title: 'Avon Colorado Adventure',
-    description: 'Experience the best of Colorado\'s high country with scenic hikes, craft breweries, and local cuisine.',
-    imageUrl: 'https://images.pexels.com/photos/2743287/pexels-photo-2743287.jpeg?auto=compress&cs=tinysrgb&w=800',
-    adventureFile: 'avon-colorado.json',
-  },
-  {
-    id: '2',
-    title: 'Moab Desert Adventure',
-    description: 'Explore stunning red rock landscapes with iconic arches and desert trails.',
-    imageUrl: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=800',
-    adventureFile: 'moab-utah.json',
-  },
-  {
-    id: '3',
-    title: 'Glacier National Park',
-    description: 'Discover pristine wilderness with alpine lakes and dramatic mountain peaks.',
-    imageUrl: 'https://images.pexels.com/photos/1770809/pexels-photo-1770809.jpeg?auto=compress&cs=tinysrgb&w=800',
-    adventureFile: 'glacier-montana.json',
-  },
-  {
-    id: '4',
-    title: 'Acadia National Park',
-    description: 'Experience rugged coastline and granite peaks in Maine\'s only national park.',
-    imageUrl: 'https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg?auto=compress&cs=tinysrgb&w=800',
-    adventureFile: 'acadia-maine.json',
-  },
-  {
-    id: '5',
-    title: 'Lake Tahoe Alpine Adventure',
-    description: 'Discover crystal-clear waters and mountain peaks around America\'s largest alpine lake.',
-    imageUrl: 'https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg?auto=compress&cs=tinysrgb&w=800',
-    adventureFile: 'lake-tahoe.json',
-  },
-  {
-    id: '6',
-    title: 'Sedona Red Rock Experience',
-    description: 'Explore mystical red rock formations and energy vortexes in Arizona\'s desert landscape.',
-    imageUrl: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=800',
-    adventureFile: 'sedona-arizona.json',
-  },
-];
-
 export default function ExploreScreen() {
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+
+  useEffect(() => {
+    loadRecommendations();
+  }, []);
+
+  const loadRecommendations = async () => {
+    try {
+      const response = await fetch('/data/ai-sample-adventures.json');
+      if (!response.ok) {
+        throw new Error('Failed to load recommendations');
+      }
+      const data = await response.json();
+      setRecommendations(data.adventures);
+    } catch (error) {
+      console.error('Error loading recommendations:', error);
+      // Fallback to hardcoded data if JSON file fails to load
+      setRecommendations([
+        {
+          id: '1',
+          title: 'Avon Colorado Adventure',
+          description: 'Experience the best of Colorado\'s high country with scenic hikes, craft breweries, and local cuisine.',
+          imageUrl: 'https://images.pexels.com/photos/2743287/pexels-photo-2743287.jpeg?auto=compress&cs=tinysrgb&w=800',
+          adventureFile: 'avon-colorado.json',
+        },
+        {
+          id: '2',
+          title: 'Moab Desert Adventure',
+          description: 'Explore stunning red rock landscapes with iconic arches and desert trails.',
+          imageUrl: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=800',
+          adventureFile: 'moab-utah.json',
+        },
+        {
+          id: '3',
+          title: 'Glacier National Park',
+          description: 'Discover pristine wilderness with alpine lakes and dramatic mountain peaks.',
+          imageUrl: 'https://images.pexels.com/photos/1770809/pexels-photo-1770809.jpeg?auto=compress&cs=tinysrgb&w=800',
+          adventureFile: 'glacier-montana.json',
+        },
+        {
+          id: '4',
+          title: 'Acadia National Park',
+          description: 'Experience rugged coastline and granite peaks in Maine\'s only national park.',
+          imageUrl: 'https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg?auto=compress&cs=tinysrgb&w=800',
+          adventureFile: 'acadia-maine.json',
+        },
+        {
+          id: '5',
+          title: 'Lake Tahoe Alpine Adventure',
+          description: 'Discover crystal-clear waters and mountain peaks around America\'s largest alpine lake.',
+          imageUrl: 'https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg?auto=compress&cs=tinysrgb&w=800',
+          adventureFile: 'lake-tahoe.json',
+        },
+        {
+          id: '6',
+          title: 'Sedona Red Rock Experience',
+          description: 'Explore mystical red rock formations and energy vortexes in Arizona\'s desert landscape.',
+          imageUrl: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=800',
+          adventureFile: 'sedona-arizona.json',
+        },
+      ]);
+    }
+  };
+
   const handleRecommendationPress = async (recommendation: Recommendation) => {
     try {
+      console.log(`Loading adventure: ${recommendation.adventureFile}`);
+      
       // Fetch the adventure data using the specific adventure file
       const response = await fetch('/api/pocPlan', {
         method: 'POST',
@@ -85,6 +106,7 @@ export default function ExploreScreen() {
       }
 
       const adventureData = await response.json();
+      console.log('Loaded adventure data:', adventureData);
       
       // Store the recommendation globally and navigate to itinerary
       global.currentRecommendation = adventureData;
