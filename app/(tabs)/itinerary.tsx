@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MapPin, Clock, ExternalLink, Save, RotateCcw } from 'lucide-react-native';
+import { MapPin, Clock, ExternalLink, Save, RotateCcw, Mountains, Utensils, Waves, Moon, Compass, TreePine, Camera, Coffee } from 'lucide-react-native';
 import { router } from 'expo-router';
 
 interface ScheduleItem {
@@ -20,6 +20,31 @@ interface LocationRecommendation {
   description: string;
   schedule: ScheduleItem[];
 }
+
+// Helper function to get activity icon based on activity type
+const getActivityIcon = (activity: string) => {
+  const activityLower = activity.toLowerCase();
+  
+  if (activityLower.includes('hike') || activityLower.includes('trail') || activityLower.includes('mountain')) {
+    return Mountains;
+  } else if (activityLower.includes('lunch') || activityLower.includes('dinner') || activityLower.includes('breakfast') || activityLower.includes('meal') || activityLower.includes('restaurant')) {
+    return Utensils;
+  } else if (activityLower.includes('kayak') || activityLower.includes('boat') || activityLower.includes('water') || activityLower.includes('lake') || activityLower.includes('river')) {
+    return Waves;
+  } else if (activityLower.includes('star') || activityLower.includes('night') || activityLower.includes('evening')) {
+    return Moon;
+  } else if (activityLower.includes('explore') || activityLower.includes('visit') || activityLower.includes('tour')) {
+    return Compass;
+  } else if (activityLower.includes('forest') || activityLower.includes('tree') || activityLower.includes('nature')) {
+    return TreePine;
+  } else if (activityLower.includes('photo') || activityLower.includes('view') || activityLower.includes('scenic')) {
+    return Camera;
+  } else if (activityLower.includes('coffee') || activityLower.includes('cafe') || activityLower.includes('brew')) {
+    return Coffee;
+  } else {
+    return Compass; // Default icon
+  }
+};
 
 export default function ItineraryScreen() {
   const [currentItinerary, setCurrentItinerary] = useState<LocationRecommendation | null>(null);
@@ -170,43 +195,47 @@ export default function ItineraryScreen() {
             <Text style={styles.scheduleTitle}>Your Itinerary</Text>
           </View>
           
-          {currentItinerary.schedule.map((item, index) => (
-            <View key={index} style={styles.scheduleItem}>
-              <View style={styles.timelineIconContainer}>
-                <View style={styles.timelineDot} />
-                {index < currentItinerary.schedule.length - 1 && (
-                  <View style={styles.timelineLine} />
-                )}
-              </View>
+          <View style={styles.scheduleGrid}>
+            {currentItinerary.schedule.map((item, index) => {
+              const IconComponent = getActivityIcon(item.activity);
+              const isLast = index === currentItinerary.schedule.length - 1;
               
-              <View style={styles.scheduleContent}>
-                <View style={styles.scheduleTime}>
-                  <Text style={styles.scheduleTimeText}>{item.time}</Text>
-                </View>
-                
-                <View style={styles.activityContent}>
-                  <Text style={styles.activityTitle}>{item.activity}</Text>
-                  <Text style={styles.activityLocation}>{item.location}</Text>
+              return (
+                <React.Fragment key={index}>
+                  {/* Timeline Column */}
+                  <View style={styles.timelineColumn}>
+                    <View style={styles.iconContainer}>
+                      <IconComponent size={24} color="#0e1a13" />
+                    </View>
+                    {!isLast && <View style={styles.timelineLine} />}
+                  </View>
                   
-                  {item.description && (
-                    <Text style={styles.activityDescription}>{item.description}</Text>
-                  )}
-                  
-                  {item.partnerLink && (
-                    <TouchableOpacity
-                      style={styles.partnerLink}
-                      onPress={() => openPartnerLink(item.partnerLink!)}
-                    >
-                      <Text style={styles.partnerLinkText}>
-                        View on {item.partnerName}
-                      </Text>
-                      <ExternalLink size={14} color="#94e0b2" />
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-            </View>
-          ))}
+                  {/* Content Column */}
+                  <View style={[styles.contentColumn, isLast && styles.contentColumnLast]}>
+                    <Text style={styles.activityTitle}>{item.activity}</Text>
+                    <Text style={styles.scheduleTime}>{item.time}</Text>
+                    <Text style={styles.activityLocation}>{item.location}</Text>
+                    
+                    {item.description && (
+                      <Text style={styles.activityDescription}>{item.description}</Text>
+                    )}
+                    
+                    {item.partnerLink && (
+                      <TouchableOpacity
+                        style={styles.partnerLink}
+                        onPress={() => openPartnerLink(item.partnerLink!)}
+                      >
+                        <Text style={styles.partnerLinkText}>
+                          View on {item.partnerName}
+                        </Text>
+                        <ExternalLink size={14} color="#94e0b2" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </React.Fragment>
+              );
+            })}
+          </View>
         </View>
 
         {/* Action Buttons */}
@@ -342,53 +371,44 @@ const styles = StyleSheet.create({
     color: '#121714',
     marginLeft: 8,
   },
-  scheduleItem: {
+  scheduleGrid: {
     flexDirection: 'row',
-    marginBottom: 24,
+    flexWrap: 'wrap',
   },
-  timelineIconContainer: {
+  timelineColumn: {
+    width: 40,
     alignItems: 'center',
-    width: 20,
-    marginRight: 16,
+    paddingTop: 12,
   },
-  timelineDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#94e0b2',
+  iconContainer: {
     marginBottom: 8,
   },
   timelineLine: {
-    width: 2,
-    backgroundColor: '#e8f2ec',
+    width: 1.5,
+    backgroundColor: '#d1e6d9',
     flex: 1,
     minHeight: 40,
   },
-  scheduleContent: {
+  contentColumn: {
     flex: 1,
+    paddingVertical: 12,
+    paddingBottom: 24,
   },
-  scheduleTime: {
-    backgroundColor: '#f1f4f2',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  scheduleTimeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#121714',
-  },
-  activityContent: {
-    flex: 1,
+  contentColumnLast: {
+    paddingBottom: 12,
   },
   activityTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#121714',
+    color: '#0e1a13',
     marginBottom: 4,
     lineHeight: 22,
+  },
+  scheduleTime: {
+    fontSize: 14,
+    color: '#51946c',
+    fontWeight: '500',
+    marginBottom: 4,
   },
   activityLocation: {
     fontSize: 14,
@@ -407,6 +427,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    marginTop: 4,
   },
   partnerLinkText: {
     fontSize: 14,
