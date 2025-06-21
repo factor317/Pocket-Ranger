@@ -184,7 +184,7 @@ export default function ExploreScreen() {
               disabled={loading || !userInput.trim()}
             >
               <Text style={styles.planButtonText}>
-                {loading ? 'Planning...' : 'Plan'}
+                {loading ? <Text>Planning...</Text> : <Text>Plan</Text>}
               </Text>
             </TouchableOpacity>
           </View>
@@ -198,7 +198,7 @@ export default function ExploreScreen() {
                 {conversation.length > 2 && (
                   <TouchableOpacity onPress={toggleConversation}>
                     <Text style={styles.conversationToggle}>
-                      {showConversation ? 'Hide' : 'Show'} Conversation
+                      {showConversation ? <Text>Hide</Text> : <Text>Show</Text>} Conversation
                     </Text>
                   </TouchableOpacity>
                 )}
