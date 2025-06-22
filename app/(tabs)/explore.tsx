@@ -17,11 +17,12 @@ interface Recommendation {
   title: string;
   description: string;
   imageUrl: string;
-  adventureFile: string;
+  searchQuery: string;
 }
 
 export default function ExploreScreen() {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadRecommendations();
@@ -29,76 +30,42 @@ export default function ExploreScreen() {
 
   const loadRecommendations = async () => {
     try {
-      const response = await fetch('/data/ai-sample-adventures.json');
+      setLoading(true);
+      console.log('Loading recommendations from API...');
+      
+      const response = await fetch('/api/ai-recommendations');
+      
       if (!response.ok) {
-        throw new Error('Failed to load recommendations');
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
+      
       const data = await response.json();
-      setRecommendations(data.adventures);
+      console.log('Recommendations loaded successfully:', data);
+      
+      if (data.recommendations && Array.isArray(data.recommendations)) {
+        setRecommendations(data.recommendations);
+      } else {
+        console.warn('Invalid recommendations format:', data);
+        setRecommendations([]);
+      }
     } catch (error) {
       console.error('Error loading recommendations:', error);
-      // Fallback to hardcoded data if JSON file fails to load
-      setRecommendations([
-        {
-          id: '1',
-          title: 'Avon Colorado Adventure',
-          description: 'Experience the best of Colorado\'s high country with scenic hikes, craft breweries, and local cuisine.',
-          imageUrl: 'https://images.pexels.com/photos/2743287/pexels-photo-2743287.jpeg?auto=compress&cs=tinysrgb&w=800',
-          adventureFile: 'avon-colorado.json',
-        },
-        {
-          id: '2',
-          title: 'Moab Desert Adventure',
-          description: 'Explore stunning red rock landscapes with iconic arches and desert trails.',
-          imageUrl: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=800',
-          adventureFile: 'moab-utah.json',
-        },
-        {
-          id: '3',
-          title: 'Glacier National Park',
-          description: 'Discover pristine wilderness with alpine lakes and dramatic mountain peaks.',
-          imageUrl: 'https://images.pexels.com/photos/1770809/pexels-photo-1770809.jpeg?auto=compress&cs=tinysrgb&w=800',
-          adventureFile: 'glacier-montana.json',
-        },
-        {
-          id: '4',
-          title: 'Acadia National Park',
-          description: 'Experience rugged coastline and granite peaks in Maine\'s only national park.',
-          imageUrl: 'https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg?auto=compress&cs=tinysrgb&w=800',
-          adventureFile: 'acadia-maine.json',
-        },
-        {
-          id: '5',
-          title: 'Lake Tahoe Alpine Adventure',
-          description: 'Discover crystal-clear waters and mountain peaks around America\'s largest alpine lake.',
-          imageUrl: 'https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg?auto=compress&cs=tinysrgb&w=800',
-          adventureFile: 'lake-tahoe.json',
-        },
-        {
-          id: '6',
-          title: 'Sedona Red Rock Experience',
-          description: 'Explore mystical red rock formations and energy vortexes in Arizona\'s desert landscape.',
-          imageUrl: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=800',
-          adventureFile: 'sedona-arizona.json',
-        },
-      ]);
+      Alert.alert('Error', 'Failed to load recommendations. Please try again.');
+      setRecommendations([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRecommendationPress = async (recommendation: Recommendation) => {
     try {
-      console.log(`Loading adventure: ${recommendation.adventureFile}`);
-      
-      // Fetch the adventure data using the specific adventure file
+      // Fetch the adventure data using the search query
       const response = await fetch('/api/pocPlan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          userInput: recommendation.title,
-          recommendedFile: recommendation.adventureFile 
-        }),
+        body: JSON.stringify({ userInput: recommendation.searchQuery }),
       });
 
       if (!response.ok) {
@@ -106,7 +73,6 @@ export default function ExploreScreen() {
       }
 
       const adventureData = await response.json();
-      console.log('Loaded adventure data:', adventureData);
       
       // Store the recommendation globally and navigate to itinerary
       global.currentRecommendation = adventureData;
@@ -120,6 +86,26 @@ export default function ExploreScreen() {
       console.error('Adventure loading error:', error);
     }
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <ArrowLeft size={24} color="#0e1a13" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>AI Recommendations</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading recommendations...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -137,28 +123,37 @@ export default function ExploreScreen() {
 
       {/* Recommendations List */}
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {recommendations.map((recommendation) => (
-          <TouchableOpacity
-            key={recommendation.id}
-            style={styles.recommendationCard}
-            onPress={() => handleRecommendationPress(recommendation)}
-          >
-            <View style={styles.cardContent}>
-              <View style={styles.textContent}>
-                <Text style={styles.recommendedLabel}>Recommended</Text>
-                <Text style={styles.title}>{recommendation.title}</Text>
-                <Text style={styles.description}>{recommendation.description}</Text>
+        {recommendations.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No recommendations available</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={loadRecommendations}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          recommendations.map((recommendation) => (
+            <TouchableOpacity
+              key={recommendation.id}
+              style={styles.recommendationCard}
+              onPress={() => handleRecommendationPress(recommendation)}
+            >
+              <View style={styles.cardContent}>
+                <View style={styles.textContent}>
+                  <Text style={styles.recommendedLabel}>Recommended</Text>
+                  <Text style={styles.title}>{recommendation.title}</Text>
+                  <Text style={styles.description}>{recommendation.description}</Text>
+                </View>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: recommendation.imageUrl }}
+                    style={styles.image}
+                    resizeMode="cover"
+                  />
+                </View>
               </View>
-              <View style={styles.imageContainer}>
-                <Image
-                  source={{ uri: recommendation.imageUrl }}
-                  style={styles.image}
-                  resizeMode="cover"
-                />
-              </View>
-            </View>
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          ))
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -194,8 +189,39 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 48,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#51946c',
+  },
   scrollView: {
     flex: 1,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#51946c',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#94e0b2',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    color: '#121714',
+    fontSize: 16,
+    fontWeight: '600',
   },
   recommendationCard: {
     marginHorizontal: 16,

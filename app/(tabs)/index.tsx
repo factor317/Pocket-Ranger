@@ -41,6 +41,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const [aiResponse, setAiResponse] = useState<string>('');
+  const [showConversation, setShowConversation] = useState(false);
 
   // Reset state when returning to home
   useEffect(() => {
@@ -49,6 +50,7 @@ export default function HomeScreen() {
       setLoading(false);
       setConversation([]);
       setAiResponse('');
+      setShowConversation(false);
       
       // Clear global state
       global.currentRecommendation = null;
@@ -68,66 +70,37 @@ export default function HomeScreen() {
     }
 
     setLoading(true);
-    console.log('Starting search with input:', inputText);
     
     try {
-      // Test health endpoint first
-      console.log('Testing health endpoint...');
-      const healthResponse = await fetch('/api/health');
-      console.log('Health response status:', healthResponse.status);
-      
-      if (!healthResponse.ok) {
-        console.error('Health endpoint failed - API routing may be broken');
-        throw new Error('API routing is not working properly');
-      }
-      
-      const healthData = await healthResponse.json();
-      console.log('Health endpoint working:', healthData);
-
-      // Process with AI for conversation and get recommended file
-      console.log('Calling Groq AI...');
+      // Process with AI for conversation
       const aiResponse = await processWithAI(inputText);
-      console.log('AI Response received:', aiResponse);
       
       if (aiResponse.shouldSearch) {
-        console.log('AI recommends searching with file:', aiResponse.recommendedFile);
-        
-        // Search for adventure recommendations from data source using the recommended file
+        // Search for adventure recommendations from data source
         const response = await fetch('/api/pocPlan', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
-            userInput: inputText,
-            recommendedFile: aiResponse.recommendedFile 
-          }),
+          body: JSON.stringify({ userInput: inputText }),
         });
 
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error('pocPlan API error:', response.status, errorText);
-          throw new Error(`Failed to fetch recommendation: ${response.status}`);
+          throw new Error('Failed to fetch recommendation');
         }
 
         const data = await response.json();
-        console.log('Adventure data received:', {
-          name: data.name,
-          city: data.city,
-          scheduleItems: data.schedule?.length || 0
-        });
         
         // Store the recommendation globally and navigate to itinerary
         global.currentRecommendation = data;
         global.isUnsavedItinerary = true;
         
-        console.log('Navigating to itinerary tab...');
         // Navigate to itinerary tab to show results
         router.push('/itinerary');
       }
       
       // Update conversation with dynamic response based on user input
-      const dynamicResponse = generateDynamicResponse(inputText, aiResponse.response, aiResponse.recommendedFile);
+      const dynamicResponse = generateDynamicResponse(inputText, aiResponse.response);
       
       const newConversation = [
         ...conversation,
@@ -136,37 +109,42 @@ export default function HomeScreen() {
       ];
       setConversation(newConversation);
       setAiResponse(dynamicResponse);
+      setShowConversation(true);
       
     } catch (error) {
-      console.error('Search error:', error);
       Alert.alert('Error', 'Failed to get recommendation. Please try again.');
+      console.error('Search error:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const generateDynamicResponse = (userInput: string, baseResponse: string, recommendedFile?: string) => {
-    // Extract location from recommended file
-    let location = '';
-    if (recommendedFile) {
-      const fileMap: { [key: string]: string } = {
-        'avon-colorado.json': 'Avon, Colorado',
-        'moab-utah.json': 'Moab, Utah',
-        'glacier-montana.json': 'Glacier National Park, Montana',
-        'lake-tahoe.json': 'Lake Tahoe, California',
-        'sedona-arizona.json': 'Sedona, Arizona',
-        'asheville-north-carolina.json': 'Asheville, North Carolina',
-        'olympic-washington.json': 'Olympic Peninsula, Washington',
-        'acadia-maine.json': 'Acadia National Park, Maine',
-        'big-sur-california.json': 'Big Sur, California',
-        'great-smoky-mountains.json': 'Great Smoky Mountains, Tennessee'
-      };
-      location = fileMap[recommendedFile] || '';
-    }
-
-    // Extract activity type from user input
+  const generateDynamicResponse = (userInput: string, baseResponse: string) => {
+    // Extract location and activity from user input
     const input = userInput.toLowerCase();
+    let location = '';
     let activity = '';
+    
+    // Extract location mentions
+    if (input.includes('avon') || input.includes('colorado')) {
+      location = 'Avon, Colorado';
+    } else if (input.includes('madison')) {
+      location = 'Madison area';
+    } else if (input.includes('milwaukee')) {
+      location = 'Milwaukee';
+    } else if (input.includes('moab') || input.includes('utah')) {
+      location = 'Moab, Utah';
+    } else if (input.includes('glacier') || input.includes('montana')) {
+      location = 'Glacier National Park';
+    } else if (input.includes('tahoe') || input.includes('california')) {
+      location = 'Lake Tahoe';
+    } else if (input.includes('sedona') || input.includes('arizona')) {
+      location = 'Sedona, Arizona';
+    } else if (input.includes('asheville') || input.includes('north carolina')) {
+      location = 'Asheville, North Carolina';
+    }
+    
+    // Extract activity type
     if (input.includes('hik')) {
       activity = 'hiking';
     } else if (input.includes('fish')) {
@@ -199,7 +177,6 @@ export default function HomeScreen() {
 
   const processWithAI = async (message: string) => {
     try {
-      console.log('Making request to /api/groq-chat');
       const response = await fetch('/api/groq-chat', {
         method: 'POST',
         headers: {
@@ -211,46 +188,23 @@ export default function HomeScreen() {
         }),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Groq API response error:', response.status, errorText);
-        throw new Error(`AI processing failed: ${response.status}`);
+        throw new Error('AI processing failed');
       }
 
-      const responseText = await response.text();
-      console.log('Raw response:', responseText.substring(0, 200) + '...');
-
-      try {
-        const jsonData = JSON.parse(responseText);
-        console.log('Successfully parsed JSON response');
-        return jsonData;
-      } catch (parseError) {
-        console.error('Failed to parse JSON:', parseError);
-        console.error('Response was:', responseText);
-        throw new Error('Invalid JSON response from AI service');
-      }
+      return await response.json();
     } catch (error) {
       console.error('AI processing error:', error);
-      
-      // Enhanced fallback logic
-      const messageLower = message.toLowerCase();
-      let fallbackFile = 'avon-colorado.json';
-      
-      if (messageLower.includes('utah') || messageLower.includes('moab')) {
-        fallbackFile = 'moab-utah.json';
-        console.log('🎯 Fallback detected Utah - using moab-utah.json');
-      }
-      
       return {
         response: "I'd love to help you plan your adventure! Let me search for some great options for you.",
         shouldSearch: true,
-        recommendedFile: fallbackFile,
         extractedInfo: {}
       };
     }
+  };
+
+  const toggleConversation = () => {
+    setShowConversation(!showConversation);
   };
 
   return (
@@ -282,7 +236,7 @@ export default function HomeScreen() {
             />
           </View>
 
-          {/* Action Button - VERIFIED: All text is properly wrapped in Text components */}
+          {/* Action Button */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.actionButton, styles.planButton]}
@@ -295,12 +249,15 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* AI Response Display */}
-          {aiResponse && (
-            <View style={styles.aiResponseContainer}>
-              <Text style={styles.aiResponseText}>{aiResponse}</Text>
-            </View>
-          )}
+          {/* AI Response Display - TEMPORARILY COMMENTED OUT */}
+          {/* 
+          <AiResponseDisplay
+            aiResponse={aiResponse}
+            conversation={conversation}
+            showConversation={showConversation}
+            toggleConversation={toggleConversation}
+          />
+          */}
         </View>
       </ScrollView>
     </View>
@@ -385,19 +342,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.15,
-  },
-  aiResponseContainer: {
-    margin: 16,
-    backgroundColor: '#f8faf9',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#e8f0ea',
-  },
-  aiResponseText: {
-    fontSize: 15,
-    color: '#121714',
-    lineHeight: 22,
-    fontWeight: '400',
   },
 });
