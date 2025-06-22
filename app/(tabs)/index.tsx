@@ -70,15 +70,15 @@ export default function HomeScreen() {
       return;
     }
 
-    console.log('🚀 HOME: Starting search for:', inputText);
+    console.log('Starting search for:', inputText);
     setLoading(true);
     
     try {
       // Process with AI for conversation
-      console.log('🤖 HOME: Calling Groq Chat API...');
+      console.log('Calling Groq Chat API...');
       const aiResponse = await processWithAI(inputText);
       
-      console.log('📋 HOME: AI Response received:', {
+      console.log('AI Response received:', {
         shouldSearch: aiResponse.shouldSearch,
         recommendedFile: aiResponse.recommendedFile,
         response: aiResponse.response?.substring(0, 100) + '...'
@@ -86,7 +86,7 @@ export default function HomeScreen() {
       
       if (aiResponse.shouldSearch) {
         // Search for adventure recommendations from data source
-        console.log('🎯 HOME: Calling POC Plan API with recommended file:', aiResponse.recommendedFile);
+        console.log('Calling POC Plan API with recommended file:', aiResponse.recommendedFile);
         
         const response = await fetch('/api/pocPlan', {
           method: 'POST',
@@ -105,7 +105,7 @@ export default function HomeScreen() {
 
         const data = await response.json();
         
-        console.log('✅ HOME: POC Plan API response received:', {
+        console.log('POC Plan API response received:', {
           name: data.name,
           city: data.city,
           scheduleLength: data.schedule?.length || 0
@@ -115,7 +115,7 @@ export default function HomeScreen() {
         global.currentRecommendation = data;
         global.isUnsavedItinerary = true;
         
-        console.log('🎯 HOME: Navigating to itinerary tab...');
+        console.log('Navigating to itinerary tab...');
         // Navigate to itinerary tab to show results
         router.push('/itinerary');
       }
@@ -135,13 +135,13 @@ export default function HomeScreen() {
         setAiResponse(dynamicResponse.trim());
         setShowConversation(true);
       } else {
-        console.warn('⚠️ HOME: Invalid AI response received, not displaying');
+        console.warn('Invalid AI response received, not displaying');
         setAiResponse('');
         setShowConversation(false);
       }
       
     } catch (error) {
-      console.error('❌ HOME: Search error:', error);
+      console.error('Search error:', error);
       Alert.alert('Error', 'Failed to get recommendation. Please try again.');
     } finally {
       setLoading(false);
@@ -216,7 +216,7 @@ export default function HomeScreen() {
 
   const processWithAI = async (message: string) => {
     try {
-      console.log('🤖 HOME: Processing with AI:', message);
+      console.log('Processing with AI:', message);
       
       const response = await fetch('/api/groq-chat', {
         method: 'POST',
@@ -234,10 +234,10 @@ export default function HomeScreen() {
       }
 
       const result = await response.json();
-      console.log('✅ HOME: AI processing completed successfully');
+      console.log('AI processing completed successfully');
       return result;
     } catch (error) {
-      console.error('❌ HOME: AI processing error:', error);
+      console.error('AI processing error:', error);
       return {
         response: "I'd love to help you plan your adventure! Let me search for some great options for you.",
         shouldSearch: true,
