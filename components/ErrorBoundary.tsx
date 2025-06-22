@@ -1,5 +1,5 @@
 import React, { Component, ReactNode } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { TriangleAlert as AlertTriangle, RefreshCw } from 'lucide-react-native';
 
 interface Props {
@@ -153,6 +153,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#fecaca',
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 8,
+      },
+    }),
   },
   title: {
     fontSize: 20,
@@ -193,7 +205,10 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 6,
     marginBottom: 12,
-    fontFamily: 'monospace',
+    fontFamily: Platform.select({
+      web: 'monospace',
+      default: 'Courier',
+    }),
   },
   stackContainer: {
     backgroundColor: '#f9fafb',
@@ -209,7 +224,10 @@ const styles = StyleSheet.create({
   stackTrace: {
     fontSize: 12,
     color: '#51946c',
-    fontFamily: 'monospace',
+    fontFamily: Platform.select({
+      web: 'monospace',
+      default: 'Courier',
+    }),
     lineHeight: 16,
   },
   resetButton: {
