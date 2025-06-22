@@ -68,29 +68,29 @@ export default function HomeScreen() {
     }
 
     setLoading(true);
-    console.log('🔍 Starting search with input:', inputText);
+    console.log('Starting search with input:', inputText);
     
     try {
       // Test health endpoint first
-      console.log('🏥 Testing health endpoint...');
+      console.log('Testing health endpoint...');
       const healthResponse = await fetch('/api/health');
-      console.log('🏥 Health response status:', healthResponse.status);
+      console.log('Health response status:', healthResponse.status);
       
       if (!healthResponse.ok) {
-        console.error('❌ Health endpoint failed - API routing may be broken');
+        console.error('Health endpoint failed - API routing may be broken');
         throw new Error('API routing is not working properly');
       }
       
       const healthData = await healthResponse.json();
-      console.log('✅ Health endpoint working:', healthData);
+      console.log('Health endpoint working:', healthData);
 
       // Process with AI for conversation and get recommended file
-      console.log('🤖 Calling Groq AI...');
+      console.log('Calling Groq AI...');
       const aiResponse = await processWithAI(inputText);
-      console.log('🤖 AI Response received:', aiResponse);
+      console.log('AI Response received:', aiResponse);
       
       if (aiResponse.shouldSearch) {
-        console.log('🔍 AI recommends searching with file:', aiResponse.recommendedFile);
+        console.log('AI recommends searching with file:', aiResponse.recommendedFile);
         
         // Search for adventure recommendations from data source using the recommended file
         const response = await fetch('/api/pocPlan', {
@@ -106,12 +106,12 @@ export default function HomeScreen() {
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('❌ pocPlan API error:', response.status, errorText);
+          console.error('pocPlan API error:', response.status, errorText);
           throw new Error(`Failed to fetch recommendation: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('📋 Adventure data received:', {
+        console.log('Adventure data received:', {
           name: data.name,
           city: data.city,
           scheduleItems: data.schedule?.length || 0
@@ -121,7 +121,7 @@ export default function HomeScreen() {
         global.currentRecommendation = data;
         global.isUnsavedItinerary = true;
         
-        console.log('🧭 Navigating to itinerary tab...');
+        console.log('Navigating to itinerary tab...');
         // Navigate to itinerary tab to show results
         router.push('/itinerary');
       }
@@ -199,7 +199,7 @@ export default function HomeScreen() {
 
   const processWithAI = async (message: string) => {
     try {
-      console.log('🌐 Making request to /api/groq-chat');
+      console.log('Making request to /api/groq-chat');
       const response = await fetch('/api/groq-chat', {
         method: 'POST',
         headers: {
@@ -211,29 +211,29 @@ export default function HomeScreen() {
         }),
       });
 
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Groq API response error:', response.status, errorText);
+        console.error('Groq API response error:', response.status, errorText);
         throw new Error(`AI processing failed: ${response.status}`);
       }
 
       const responseText = await response.text();
-      console.log('📄 Raw response:', responseText.substring(0, 200) + '...');
+      console.log('Raw response:', responseText.substring(0, 200) + '...');
 
       try {
         const jsonData = JSON.parse(responseText);
-        console.log('✅ Successfully parsed JSON response');
+        console.log('Successfully parsed JSON response');
         return jsonData;
       } catch (parseError) {
-        console.error('❌ Failed to parse JSON:', parseError);
-        console.error('❌ Response was:', responseText);
+        console.error('Failed to parse JSON:', parseError);
+        console.error('Response was:', responseText);
         throw new Error('Invalid JSON response from AI service');
       }
     } catch (error) {
-      console.error('❌ AI processing error:', error);
+      console.error('AI processing error:', error);
       
       // Enhanced fallback logic
       const messageLower = message.toLowerCase();
