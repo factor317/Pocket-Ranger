@@ -31,7 +31,7 @@ export default function ExploreScreen() {
   const loadRecommendations = async () => {
     try {
       setLoading(true);
-      console.log('Loading recommendations from API...');
+      console.log('🔍 Loading recommendations from API...');
       
       const response = await fetch('/api/ai-recommendations');
       
@@ -40,7 +40,7 @@ export default function ExploreScreen() {
       }
       
       const data = await response.json();
-      console.log('Recommendations loaded successfully:', data);
+      console.log('✅ Recommendations loaded successfully:', data);
       
       if (data.recommendations && Array.isArray(data.recommendations)) {
         setRecommendations(data.recommendations);
@@ -49,7 +49,7 @@ export default function ExploreScreen() {
         setRecommendations([]);
       }
     } catch (error) {
-      console.error('Error loading recommendations:', error);
+      console.error('❌ Error loading recommendations:', error);
       Alert.alert('Error', 'Failed to load recommendations. Please try again.');
       setRecommendations([]);
     } finally {
@@ -59,31 +59,81 @@ export default function ExploreScreen() {
 
   const handleRecommendationPress = async (recommendation: Recommendation) => {
     try {
-      // Fetch the adventure data using the search query
+      console.log('🎯 Adventure selected:', recommendation.title);
+      console.log('🔍 Search query:', recommendation.searchQuery);
+      
+      // CRITICAL: Clear any existing recommendation first
+      global.currentRecommendation = null;
+      global.isUnsavedItinerary = false;
+      
+      console.log('🧹 Cleared existing global state');
+      
+      // Step 1: Get AI recommendation for the search query
+      console.log('🤖 Step 1: Calling Groq Chat API...');
+      const aiResponse = await fetch('/api/groq-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: recommendation.searchQuery,
+          conversationHistory: []
+        }),
+      });
+
+      if (!aiResponse.ok) {
+        throw new Error(`AI API failed: ${aiResponse.status}`);
+      }
+
+      const aiData = await aiResponse.json();
+      console.log('✅ AI response received:', {
+        shouldSearch: aiData.shouldSearch,
+        recommendedFile: aiData.recommendedFile
+      });
+
+      // Step 2: Get adventure data using the recommended file
+      console.log('🎯 Step 2: Calling POC Plan API with recommended file...');
       const response = await fetch('/api/pocPlan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userInput: recommendation.searchQuery }),
+        body: JSON.stringify({ 
+          userInput: recommendation.searchQuery,
+          recommendedFile: aiData.recommendedFile
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch adventure data');
+        throw new Error(`Adventure API failed: ${response.status}`);
       }
 
       const adventureData = await response.json();
+      
+      console.log('✅ Adventure data received:', {
+        name: adventureData.name,
+        city: adventureData.city,
+        scheduleLength: adventureData.schedule?.length || 0
+      });
+      
+      // CRITICAL: Validate adventure data before storing
+      if (!adventureData.name || !adventureData.city || !adventureData.schedule) {
+        throw new Error('Invalid adventure data received');
+      }
       
       // Store the recommendation globally and navigate to itinerary
       global.currentRecommendation = adventureData;
       global.isUnsavedItinerary = true;
       
-      // Navigate to itinerary tab to show results with consistent styling
+      console.log('💾 Stored new adventure in global state');
+      console.log('🧭 Navigating to itinerary tab...');
+      
+      // Navigate to itinerary tab to show results
       router.push('/itinerary');
       
     } catch (error) {
+      console.error('❌ Adventure loading error:', error);
       Alert.alert('Error', 'Failed to load adventure details. Please try again.');
-      console.error('Adventure loading error:', error);
     }
   };
 

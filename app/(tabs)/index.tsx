@@ -44,21 +44,28 @@ export default function HomeScreen() {
   const [aiResponse, setAiResponse] = useState<string>('');
   const [showConversation, setShowConversation] = useState(false);
 
-  // Reset state when returning to home
+  // CRITICAL: Reset state when component mounts or when user returns to home
   useEffect(() => {
     const resetState = () => {
+      console.log('🏠 Home screen mounted - resetting all state');
+      
       setUserInput('');
       setLoading(false);
       setConversation([]);
       setAiResponse('');
       setShowConversation(false);
       
-      // Clear global state
-      global.currentRecommendation = null;
-      global.isUnsavedItinerary = false;
+      // CRITICAL: Only clear global state if user is starting fresh
+      // Don't clear if they're just navigating between tabs
+      if (!global.currentRecommendation) {
+        global.currentRecommendation = null;
+        global.isUnsavedItinerary = false;
+        console.log('✅ Global state cleared (no existing recommendation)');
+      } else {
+        console.log('ℹ️ Preserving existing global recommendation');
+      }
     };
 
-    // Reset on component mount
     resetState();
   }, []);
 
@@ -70,15 +77,20 @@ export default function HomeScreen() {
       return;
     }
 
-    console.log('Starting search for:', inputText);
+    console.log('🔍 Starting search for:', inputText);
     setLoading(true);
     
     try {
+      // CRITICAL: Clear any existing recommendation before starting new search
+      global.currentRecommendation = null;
+      global.isUnsavedItinerary = false;
+      console.log('🧹 Cleared existing global state for new search');
+      
       // Process with AI for conversation
-      console.log('Calling Groq Chat API...');
+      console.log('🤖 Calling Groq Chat API...');
       const aiResponse = await processWithAI(inputText);
       
-      console.log('AI Response received:', {
+      console.log('✅ AI Response received:', {
         shouldSearch: aiResponse.shouldSearch,
         recommendedFile: aiResponse.recommendedFile,
         response: aiResponse.response?.substring(0, 100) + '...'
@@ -86,7 +98,7 @@ export default function HomeScreen() {
       
       if (aiResponse.shouldSearch) {
         // Search for adventure recommendations from data source
-        console.log('Calling POC Plan API with recommended file:', aiResponse.recommendedFile);
+        console.log('🎯 Calling POC Plan API with recommended file:', aiResponse.recommendedFile);
         
         const response = await fetch('/api/pocPlan', {
           method: 'POST',
@@ -105,17 +117,24 @@ export default function HomeScreen() {
 
         const data = await response.json();
         
-        console.log('POC Plan API response received:', {
+        console.log('✅ POC Plan API response received:', {
           name: data.name,
           city: data.city,
           scheduleLength: data.schedule?.length || 0
         });
         
+        // CRITICAL: Validate adventure data before storing
+        if (!data.name || !data.city || !data.schedule) {
+          throw new Error('Invalid adventure data received');
+        }
+        
         // Store the recommendation globally and navigate to itinerary
         global.currentRecommendation = data;
         global.isUnsavedItinerary = true;
         
-        console.log('Navigating to itinerary tab...');
+        console.log('💾 Stored new adventure in global state');
+        console.log('🧭 Navigating to itinerary tab...');
+        
         // Navigate to itinerary tab to show results
         router.push('/itinerary');
       }
@@ -141,7 +160,7 @@ export default function HomeScreen() {
       }
       
     } catch (error) {
-      console.error('Search error:', error);
+      console.error('❌ Search error:', error);
       Alert.alert('Error', 'Failed to get recommendation. Please try again.');
     } finally {
       setLoading(false);
@@ -216,7 +235,7 @@ export default function HomeScreen() {
 
   const processWithAI = async (message: string) => {
     try {
-      console.log('Processing with AI:', message);
+      console.log('🤖 Processing with AI:', message);
       
       const response = await fetch('/api/groq-chat', {
         method: 'POST',
@@ -234,10 +253,10 @@ export default function HomeScreen() {
       }
 
       const result = await response.json();
-      console.log('AI processing completed successfully');
+      console.log('✅ AI processing completed successfully');
       return result;
     } catch (error) {
-      console.error('AI processing error:', error);
+      console.error('❌ AI processing error:', error);
       return {
         response: "I'd love to help you plan your adventure! Let me search for some great options for you.",
         shouldSearch: true,
@@ -300,17 +319,12 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-{
-          /* Add this guard around ALL potential text outputs 
-          {someText ? <Text>{someText}</Text> : null}
-          
+          {/* AI Response Display - Only show if valid */}
           {shouldShowAiResponse && (
             <View style={styles.aiResponseContainer}>
-              {aiResponse ? <Text style={styles.aiResponseText}>{aiResponse}</Text> : null }
+              <Text style={styles.aiResponseText}>{aiResponse}</Text>
             </View>
           )}
-          */
-}
         </View>
       </ScrollView>
     </View>

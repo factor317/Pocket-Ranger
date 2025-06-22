@@ -169,11 +169,22 @@ export default function ItineraryScreen() {
           text: 'Discard',
           style: 'destructive',
           onPress: () => {
+            console.log('🗑️ Discarding current adventure and restarting...');
+            
+            // CRITICAL: Clear all state completely
             setCurrentItinerary(null);
             setIsUnsaved(false);
+            setAdventureName('');
+            setShowSaveModal(false);
+            
+            // CRITICAL: Clear global state completely
             global.currentRecommendation = null;
             global.isUnsavedItinerary = false;
-            router.push('/');
+            
+            console.log('✅ All state cleared, navigating to home...');
+            
+            // Navigate to home and replace the current route
+            router.replace('/');
           },
         },
       ]
