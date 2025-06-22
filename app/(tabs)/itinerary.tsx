@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking, TextInput, Modal, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Linking, TextInput, Modal, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MapPin, Clock, ExternalLink, Save, RotateCcw, Mountain as Mountains, Utensils, Waves, Moon, Compass, TreePine, Camera, Coffee, X } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { createStyles, theme, combineStyles } from '@/assets/styles';
 
 interface ScheduleItem {
   time: string;
@@ -203,7 +204,7 @@ export default function ItineraryScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.emptyState}>
-          <MapPin size={48} color="#51946c" />
+          <MapPin size={48} color={theme.colors.primary[500]} />
           <Text style={styles.emptyTitle}>No itinerary yet</Text>
           <Text style={styles.emptySubtitle}>
             Plan an adventure from the Home tab to see your itinerary here
@@ -227,7 +228,7 @@ export default function ItineraryScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerContent}>
-            <MapPin size={24} color="#121714" />
+            <MapPin size={24} color={theme.colors.text.primary} />
             <View style={styles.headerText}>
               <Text style={styles.title}>{currentItinerary.name}</Text>
               <Text style={styles.location}>{currentItinerary.city}</Text>
@@ -249,7 +250,7 @@ export default function ItineraryScreen() {
         {/* Schedule */}
         <View style={styles.scheduleContainer}>
           <View style={styles.scheduleHeader}>
-            <Clock size={20} color="#121714" />
+            <Clock size={20} color={theme.colors.text.primary} />
             <Text style={styles.scheduleTitle}>Your Itinerary</Text>
           </View>
           
@@ -271,7 +272,7 @@ export default function ItineraryScreen() {
                     {/* Left side: Icon and timeline */}
                     <View style={styles.timelineLeft}>
                       <View style={styles.iconContainer}>
-                        <IconComponent size={20} color="#0e1a13" />
+                        <IconComponent size={20} color={theme.colors.text.secondary} />
                       </View>
                       {!isLast && <View style={styles.timelineLine} />}
                     </View>
@@ -294,7 +295,7 @@ export default function ItineraryScreen() {
                           <Text style={styles.partnerLinkText}>
                             View on {item.partnerName}
                           </Text>
-                          <ExternalLink size={14} color="#94e0b2" />
+                          <ExternalLink size={14} color={theme.colors.secondary[400]} />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -316,7 +317,7 @@ export default function ItineraryScreen() {
               style={styles.saveButton}
               onPress={handleSaveItinerary}
             >
-              <Save size={20} color="#ffffff" />
+              <Save size={20} color={theme.colors.text.inverse} />
               <Text style={styles.saveButtonText}>Save Adventure</Text>
             </TouchableOpacity>
           )}
@@ -325,7 +326,7 @@ export default function ItineraryScreen() {
             style={styles.restartButton}
             onPress={handleDiscardAndRestart}
           >
-            <RotateCcw size={20} color="#51946c" />
+            <RotateCcw size={20} color={theme.colors.primary[500]} />
             <Text style={styles.restartButtonText}>
               {isUnsaved ? 'Discard & Restart' : 'Plan New Adventure'}
             </Text>
@@ -348,7 +349,7 @@ export default function ItineraryScreen() {
                 style={styles.closeButton}
                 onPress={() => setShowSaveModal(false)}
               >
-                <X size={24} color="#688273" />
+                <X size={24} color={theme.colors.text.tertiary} />
               </TouchableOpacity>
             </View>
             
@@ -372,11 +373,11 @@ export default function ItineraryScreen() {
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={[styles.modalSaveButton, !adventureName.trim() && styles.modalSaveButtonDisabled]}
+                style={combineStyles(styles.modalSaveButton, !adventureName.trim() && styles.modalSaveButtonDisabled)}
                 onPress={handleSaveFromModal}
                 disabled={!adventureName.trim()}
               >
-                <Text style={[styles.modalSaveText, !adventureName.trim() && styles.modalSaveTextDisabled]}>
+                <Text style={combineStyles(styles.modalSaveText, !adventureName.trim() && styles.modalSaveTextDisabled)}>
                   Save
                 </Text>
               </TouchableOpacity>
@@ -388,53 +389,29 @@ export default function ItineraryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fbfa',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 48,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#0e1a13',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 16,
-    color: '#51946c',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 24,
-  },
+const styles = createStyles({
+  container: theme.components.container,
+  scrollView: theme.components.scrollView,
+  emptyState: theme.components.emptyState,
+  emptyTitle: theme.components.emptyTitle,
+  emptySubtitle: theme.components.emptySubtitle,
   planButton: {
-    backgroundColor: '#94e0b2',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
+    ...theme.components.buttonPrimary,
+    ...theme.layout.buttonPadding,
+    borderRadius: theme.spacing.md,
   },
   planButtonText: {
-    color: '#121714',
-    fontSize: 16,
-    fontWeight: '600',
+    ...theme.textStyles.button,
+    color: theme.colors.text.primary,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 20,
-    backgroundColor: '#ffffff',
+    padding: theme.spacing.xl,
+    backgroundColor: theme.colors.background.primary,
     borderBottomWidth: 1,
-    borderBottomColor: '#e8f2ec',
+    borderBottomColor: theme.colors.border.medium,
   },
   headerContent: {
     flexDirection: 'row',
@@ -442,57 +419,46 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerText: {
-    marginLeft: 12,
+    marginLeft: theme.spacing.md,
     flex: 1,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#121714',
-    lineHeight: 26,
+    ...theme.textStyles.h3,
+    color: theme.colors.text.primary,
   },
   location: {
-    fontSize: 14,
-    color: '#688273',
+    ...theme.textStyles.bodySmall,
+    color: theme.colors.text.tertiary,
     marginTop: 2,
     fontWeight: '500',
   },
   unsavedBadge: {
-    backgroundColor: '#f59e0b',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    ...theme.components.badgeWarning,
+    ...theme.components.badge,
   },
-  unsavedText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
+  unsavedText: theme.components.badgeText,
   descriptionContainer: {
-    padding: 20,
-    backgroundColor: '#ffffff',
+    ...theme.layout.containerPaddingLarge,
+    backgroundColor: theme.colors.background.primary,
   },
   description: {
-    fontSize: 16,
-    color: '#121714',
-    lineHeight: 24,
-    fontWeight: '400',
+    ...theme.textStyles.body,
+    color: theme.colors.text.primary,
   },
   scheduleContainer: {
-    padding: 20,
-    backgroundColor: '#ffffff',
-    marginTop: 8,
+    ...theme.layout.containerPaddingLarge,
+    backgroundColor: theme.colors.background.primary,
+    marginTop: theme.spacing.sm,
   },
   scheduleHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: theme.spacing['2xl'],
   },
   scheduleTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#121714',
-    marginLeft: 8,
+    ...theme.textStyles.h4,
+    color: theme.colors.text.primary,
+    marginLeft: theme.spacing.sm,
   },
   // NEW: Vertical Timeline Layout
   timelineContainer: {
@@ -500,95 +466,89 @@ const styles = StyleSheet.create({
   },
   timelineItem: {
     flexDirection: 'row',
-    marginBottom: 24,
+    marginBottom: theme.spacing['2xl'],
   },
   timelineLeft: {
     width: 40,
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: theme.spacing.lg,
   },
   iconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f1f4f2',
+    backgroundColor: theme.colors.background.tertiary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
   },
   timelineLine: {
     width: 2,
-    backgroundColor: '#e8f2ec',
+    backgroundColor: theme.colors.border.medium,
     flex: 1,
     minHeight: 60,
   },
   timelineContent: {
     flex: 1,
-    paddingTop: 8,
+    paddingTop: theme.spacing.sm,
   },
   activityTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#0e1a13',
-    marginBottom: 4,
-    lineHeight: 24,
+    ...theme.textStyles.h4,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.xs,
   },
   scheduleTime: {
-    fontSize: 14,
-    color: '#51946c',
+    ...theme.textStyles.bodySmall,
+    color: theme.colors.primary[500],
     fontWeight: '500',
     marginBottom: 6,
   },
   activityLocation: {
-    fontSize: 14,
-    color: '#688273',
-    marginBottom: 8,
-    fontWeight: '400',
+    ...theme.textStyles.bodySmall,
+    color: theme.colors.text.tertiary,
+    marginBottom: theme.spacing.sm,
   },
   activityDescription: {
-    fontSize: 14,
-    color: '#688273',
-    marginBottom: 12,
+    ...theme.textStyles.bodySmall,
+    color: theme.colors.text.tertiary,
+    marginBottom: theme.spacing.md,
     fontStyle: 'italic',
-    lineHeight: 20,
   },
   partnerLink: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: 4,
+    marginTop: theme.spacing.xs,
   },
   partnerLinkText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#94e0b2',
+    ...theme.textStyles.label,
+    color: theme.colors.secondary[400],
   },
   noScheduleContainer: {
-    padding: 20,
+    padding: theme.spacing.xl,
     alignItems: 'center',
   },
   noScheduleText: {
-    fontSize: 16,
-    color: '#688273',
+    ...theme.textStyles.body,
+    color: theme.colors.text.tertiary,
     fontStyle: 'italic',
   },
   actionButtons: {
-    padding: 20,
-    gap: 12,
+    ...theme.layout.containerPaddingLarge,
+    gap: theme.spacing.md,
   },
   saveButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#10b981',
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
+    backgroundColor: theme.colors.success[500],
+    ...theme.layout.buttonPaddingLarge,
+    borderRadius: theme.spacing.md,
+    gap: theme.spacing.sm,
   },
   saveButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    ...theme.textStyles.buttonLarge,
+    color: theme.colors.text.inverse,
   },
   restartButton: {
     flexDirection: 'row',
@@ -596,98 +556,71 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#51946c',
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
+    borderColor: theme.colors.primary[500],
+    ...theme.layout.buttonPaddingLarge,
+    borderRadius: theme.spacing.md,
+    gap: theme.spacing.sm,
   },
   restartButtonText: {
-    color: '#51946c',
-    fontSize: 16,
-    fontWeight: '600',
+    ...theme.textStyles.buttonLarge,
+    color: theme.colors.primary[500],
   },
   // Modal styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 24,
-    width: '100%',
-    maxWidth: 400,
-    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
-    elevation: 8,
-  },
+  modalOverlay: theme.components.modalOverlay,
+  modalContent: theme.components.modalContent,
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#121714',
+    ...theme.textStyles.h3,
+    color: theme.colors.text.primary,
   },
   closeButton: {
-    padding: 4,
+    padding: theme.spacing.xs,
   },
   modalSubtitle: {
-    fontSize: 16,
-    color: '#688273',
-    marginBottom: 20,
-    lineHeight: 22,
+    ...theme.textStyles.body,
+    color: theme.colors.text.tertiary,
+    marginBottom: theme.spacing.xl,
   },
   modalInput: {
-    borderWidth: 1,
-    borderColor: '#e8f2ec',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#121714',
-    backgroundColor: '#f8fbfa',
-    marginBottom: 24,
+    ...theme.components.input,
+    marginBottom: theme.spacing['2xl'],
   },
   modalButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: theme.spacing.md,
   },
   modalCancelButton: {
     flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    ...theme.layout.buttonPadding,
+    borderRadius: theme.spacing.sm,
     borderWidth: 1,
-    borderColor: '#e8f2ec',
+    borderColor: theme.colors.border.medium,
     alignItems: 'center',
   },
   modalCancelText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#688273',
+    ...theme.textStyles.button,
+    color: theme.colors.text.tertiary,
   },
   modalSaveButton: {
     flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    backgroundColor: '#10b981',
+    ...theme.layout.buttonPadding,
+    borderRadius: theme.spacing.sm,
+    backgroundColor: theme.colors.success[500],
     alignItems: 'center',
   },
   modalSaveButtonDisabled: {
-    backgroundColor: '#d1e6d9',
+    backgroundColor: theme.colors.neutral[300],
   },
   modalSaveText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
+    ...theme.textStyles.button,
+    color: theme.colors.text.inverse,
   },
   modalSaveTextDisabled: {
-    color: '#688273',
+    color: theme.colors.text.tertiary,
   },
 });

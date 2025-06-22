@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  StyleSheet,
   Alert,
   Image,
   Platform,
@@ -13,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Bug } from 'lucide-react-native';
+import { createStyles, theme, combineStyles } from '@/assets/styles';
 
 interface LocationRecommendation {
   name: string;
@@ -298,7 +298,7 @@ export default function HomeScreen() {
             <TextInput
               style={styles.textArea}
               placeholder="What do you want to do?"
-              placeholderTextColor="#688273"
+              placeholderTextColor={theme.colors.text.tertiary}
               value={userInput}
               onChangeText={setUserInput}
               multiline
@@ -309,7 +309,7 @@ export default function HomeScreen() {
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity
-              style={[styles.actionButton, styles.planButton]}
+              style={combineStyles(styles.actionButton, styles.planButton)}
               onPress={() => handleSearch()}
               disabled={loading || !userInput.trim()}
             >
@@ -325,20 +325,15 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  scrollView: {
-    flex: 1,
-  },
+const styles = createStyles({
+  container: theme.components.container,
+  scrollView: theme.components.scrollView,
   headerContainer: {
     height: 320,
     position: 'relative',
-    marginHorizontal: Platform.OS === 'web' ? 16 : 0,
-    marginTop: Platform.OS === 'web' ? 12 : 0,
-    borderRadius: Platform.OS === 'web' ? 12 : 0,
+    marginHorizontal: Platform.OS === 'web' ? theme.spacing.lg : 0,
+    marginTop: Platform.OS === 'web' ? theme.spacing.md : 0,
+    borderRadius: Platform.OS === 'web' ? theme.spacing.md : 0,
     overflow: 'hidden',
   },
   backgroundImage: {
@@ -348,47 +343,38 @@ const styles = StyleSheet.create({
   },
   debugButton: {
     position: 'absolute',
-    top: 16,
-    right: 16,
+    top: theme.spacing.lg,
+    right: theme.spacing.lg,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 20,
-    padding: 8,
+    padding: theme.spacing.sm,
     zIndex: 10,
   },
   mainContent: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.background.primary,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#121714',
+    ...theme.textStyles.h1,
+    color: theme.colors.text.primary,
     textAlign: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 12,
-    letterSpacing: -0.5,
+    ...theme.layout.containerPadding,
+    paddingTop: theme.spacing.xl,
+    paddingBottom: theme.spacing.md,
   },
   inputSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    ...theme.layout.containerPadding,
+    paddingVertical: theme.spacing.md,
   },
   textArea: {
-    backgroundColor: '#f1f4f2',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#121714',
+    ...theme.components.input,
     minHeight: 144,
-    fontWeight: '400',
-    lineHeight: 22,
-    borderWidth: 0,
   },
   buttonContainer: {
     flexDirection: 'row',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    gap: theme.spacing.md,
+    ...theme.layout.containerPadding,
+    paddingVertical: theme.spacing.md,
     justifyContent: 'center',
     maxWidth: 480,
     alignSelf: 'center',
@@ -405,26 +391,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   planButton: {
-    backgroundColor: '#94e0b2',
+    backgroundColor: theme.colors.secondary[400],
   },
   planButtonText: {
-    color: '#121714',
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: 0.15,
-  },
-  aiResponseContainer: {
-    margin: 16,
-    backgroundColor: '#f8faf9',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#e8f0ea',
-  },
-  aiResponseText: {
-    fontSize: 15,
-    color: '#121714',
-    lineHeight: 22,
-    fontWeight: '400',
+    ...theme.textStyles.button,
+    color: theme.colors.text.primary,
   },
 });

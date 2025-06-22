@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  StyleSheet,
   TouchableOpacity,
   Image,
   Alert,
@@ -11,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { createStyles, theme, combineStyles } from '@/assets/styles';
 
 interface Recommendation {
   id: string;
@@ -145,7 +145,7 @@ export default function ExploreScreen() {
             style={styles.backButton}
             onPress={() => router.back()}
           >
-            <ArrowLeft size={24} color="#0e1a13" />
+            <ArrowLeft size={24} color={theme.colors.text.secondary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>AI Recommendations</Text>
           <View style={styles.headerSpacer} />
@@ -165,7 +165,7 @@ export default function ExploreScreen() {
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <ArrowLeft size={24} color="#0e1a13" />
+          <ArrowLeft size={24} color={theme.colors.text.secondary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>AI Recommendations</Text>
         <View style={styles.headerSpacer} />
@@ -209,110 +209,72 @@ export default function ExploreScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fbfa',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#f8fbfa',
-  },
+const styles = createStyles({
+  container: theme.components.container,
+  header: theme.components.header,
   backButton: {
     width: 48,
     height: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#0e1a13',
-    letterSpacing: -0.015,
-    textAlign: 'center',
-    flex: 1,
-  },
+  headerTitle: theme.components.headerTitle,
   headerSpacer: {
     width: 48,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#51946c',
-  },
-  scrollView: {
-    flex: 1,
-  },
+  loadingContainer: theme.components.loadingContainer,
+  loadingText: theme.components.loadingText,
+  scrollView: theme.components.scrollView,
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: theme.spacing['4xl'],
   },
   emptyText: {
-    fontSize: 16,
-    color: '#51946c',
-    marginBottom: 16,
+    ...theme.textStyles.body,
+    color: theme.colors.text.tertiary,
+    marginBottom: theme.spacing.lg,
   },
   retryButton: {
-    backgroundColor: '#94e0b2',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
+    ...theme.components.buttonPrimary,
+    ...theme.layout.buttonPadding,
+    borderRadius: theme.spacing.md,
   },
   retryButtonText: {
-    color: '#121714',
-    fontSize: 16,
-    fontWeight: '600',
+    ...theme.textStyles.button,
+    color: theme.colors.text.primary,
   },
   recommendationCard: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    ...theme.components.card,
+    marginHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
     overflow: 'hidden',
-    boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.05)',
-    elevation: 2,
   },
   cardContent: {
     flexDirection: 'row',
-    padding: 16,
-    gap: 16,
+    gap: theme.spacing.lg,
   },
   textContent: {
     flex: 2,
-    gap: 4,
+    gap: theme.spacing.xs,
   },
   recommendedLabel: {
-    fontSize: 14,
-    color: '#51946c',
-    fontWeight: '400',
-    lineHeight: 20,
+    ...theme.textStyles.caption,
+    color: theme.colors.text.tertiary,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#0e1a13',
-    lineHeight: 22,
+    ...theme.textStyles.h4,
+    color: theme.colors.text.secondary,
   },
   description: {
-    fontSize: 14,
-    color: '#51946c',
-    fontWeight: '400',
-    lineHeight: 20,
+    ...theme.textStyles.bodySmall,
+    color: theme.colors.text.tertiary,
   },
   imageContainer: {
     flex: 1,
     aspectRatio: 16 / 9,
-    borderRadius: 12,
+    borderRadius: theme.spacing.md,
     overflow: 'hidden',
   },
   image: {
