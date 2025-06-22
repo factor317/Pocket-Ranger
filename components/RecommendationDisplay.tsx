@@ -119,17 +119,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e8f0ea',
     ...Platform.select({
-      ios: {
+      web: {
+        boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.05)',
+      },
+      default: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 8,
-      },
-      android: {
         elevation: 2,
-      },
-      web: {
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
       },
     }),
   },

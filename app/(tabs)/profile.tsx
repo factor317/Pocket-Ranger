@@ -185,10 +185,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.05)',
     elevation: 2,
   },
   sectionTitle: {
@@ -317,10 +314,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 16,
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.05)',
     elevation: 2,
   },
   authTitle: {

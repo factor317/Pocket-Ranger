@@ -227,10 +227,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 12,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.05)',
     elevation: 2,
   },
   adventureContent: {
