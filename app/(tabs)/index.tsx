@@ -302,13 +302,13 @@ export default function HomeScreen() {
 
           {/* Add this guard around ALL potential text outputs 
           {someText ? <Text>{someText}</Text> : null}
-          
+          */}
           {shouldShowAiResponse && (
             <View style={styles.aiResponseContainer}>
               {styles.aiResponseText ? <Text style={styles.aiResponseText}>{aiResponse}</Text> : null }
             </View>
           )}
-          */}
+
         </View>
       </ScrollView>
     </View>
