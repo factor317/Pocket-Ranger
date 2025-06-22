@@ -12,13 +12,14 @@ interface AiResponseDisplayProps {
 export default function AiResponseDisplay({
   aiResponse,
 }: AiResponseDisplayProps) {
-  if (!aiResponse) {
+  // Validate aiResponse before rendering
+  if (!aiResponse || typeof aiResponse !== 'string' || !aiResponse.trim()) {
     return null;
   }
 
   return (
     <View style={styles.aiResponseContainer}>
-      <Text style={styles.aiResponseText}>{aiResponse}</Text>
+      <Text style={styles.aiResponseText}>{aiResponse.trim()}</Text>
     </View>
   );
 }

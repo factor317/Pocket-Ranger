@@ -129,8 +129,15 @@ export default function HomeScreen() {
         { role: 'assistant' as const, content: dynamicResponse, timestamp: Date.now() + 1 }
       ];
       setConversation(newConversation);
-      setAiResponse(dynamicResponse);
-      setShowConversation(true);
+      
+      // Validate AI response before setting it
+      if (typeof dynamicResponse === 'string' && dynamicResponse.trim()) {
+        setAiResponse(dynamicResponse);
+        setShowConversation(true);
+      } else {
+        console.warn('⚠️ HOME: Invalid AI response received, not displaying');
+        setAiResponse('');
+      }
       
     } catch (error) {
       console.error('❌ HOME: Search error:', error);
@@ -141,6 +148,16 @@ export default function HomeScreen() {
   };
 
   const generateDynamicResponse = (userInput: string, baseResponse: string) => {
+    // Validate input parameters
+    if (!userInput || typeof userInput !== 'string') {
+      return 'I\'d love to help you plan your adventure! Please provide more details about what you\'re looking for.';
+    }
+
+    // Use base response if it's valid, otherwise generate fallback
+    if (baseResponse && typeof baseResponse === 'string' && baseResponse.trim()) {
+      return baseResponse.trim();
+    }
+
     // Extract location and activity from user input
     const input = userInput.toLowerCase();
     let location = '';
@@ -235,14 +252,12 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header with Background Image */}
         <View style={styles.headerContainer}>
           <Image
             source={{ uri: 'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2' }}
             style={styles.backgroundImage}
           />
           
-          {/* Debug Button */}
           <TouchableOpacity
             style={styles.debugButton}
             onPress={() => router.push('/debug-adventures')}
@@ -251,11 +266,9 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Main Content */}
         <View style={styles.mainContent}>
           <Text style={styles.title}>Plan your next adventure</Text>
           
-          {/* Input Section */}
           <View style={styles.inputSection}>
             <TextInput
               style={styles.textArea}
@@ -269,7 +282,6 @@ export default function HomeScreen() {
             />
           </View>
 
-          {/* Action Button */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.actionButton, styles.planButton]}
@@ -282,8 +294,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* AI Response Display - Simplified */}
-          {aiResponse && (
+          {aiResponse && typeof aiResponse === 'string' && aiResponse.trim() && (
             <View style={styles.aiResponseContainer}>
               <Text style={styles.aiResponseText}>{aiResponse}</Text>
             </View>
