@@ -212,23 +212,24 @@ export default function ItineraryScreen() {
             <Text style={styles.scheduleTitle}>Your Itinerary</Text>
           </View>
           
-          <View style={styles.scheduleGrid}>
+          {/* Vertical Timeline Layout */}
+          <View style={styles.timelineContainer}>
             {currentItinerary.schedule.map((item, index) => {
               const IconComponent = getActivityIcon(item.activity);
               const isLast = index === currentItinerary.schedule.length - 1;
               
               return (
-                <React.Fragment key={index}>
-                  {/* Timeline Column */}
-                  <View style={styles.timelineColumn}>
+                <View key={index} style={styles.timelineItem}>
+                  {/* Left side: Icon and timeline */}
+                  <View style={styles.timelineLeft}>
                     <View style={styles.iconContainer}>
-                      <IconComponent size={24} color="#0e1a13" />
+                      <IconComponent size={20} color="#0e1a13" />
                     </View>
                     {!isLast && <View style={styles.timelineLine} />}
                   </View>
                   
-                  {/* Content Column */}
-                  <View style={[styles.contentColumn, isLast && styles.contentColumnLast]}>
+                  {/* Right side: Content */}
+                  <View style={styles.timelineContent}>
                     <Text style={styles.activityTitle}>{item.activity}</Text>
                     <Text style={styles.scheduleTime}>{item.time}</Text>
                     <Text style={styles.activityLocation}>{item.location}</Text>
@@ -249,7 +250,7 @@ export default function ItineraryScreen() {
                       </TouchableOpacity>
                     )}
                   </View>
-                </React.Fragment>
+                </View>
               );
             })}
           </View>
@@ -432,7 +433,7 @@ const styles = StyleSheet.create({
   scheduleHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   scheduleTitle: {
     fontSize: 18,
@@ -440,62 +441,68 @@ const styles = StyleSheet.create({
     color: '#121714',
     marginLeft: 8,
   },
-  scheduleGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  // NEW: Vertical Timeline Layout
+  timelineContainer: {
+    flex: 1,
   },
-  timelineColumn: {
+  timelineItem: {
+    flexDirection: 'row',
+    marginBottom: 24,
+  },
+  timelineLeft: {
     width: 40,
     alignItems: 'center',
-    paddingTop: 12,
+    marginRight: 16,
   },
   iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f1f4f2',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 8,
   },
   timelineLine: {
-    width: 1.5,
-    backgroundColor: '#d1e6d9',
+    width: 2,
+    backgroundColor: '#e8f2ec',
     flex: 1,
-    minHeight: 40,
+    minHeight: 60,
   },
-  contentColumn: {
+  timelineContent: {
     flex: 1,
-    paddingVertical: 12,
-    paddingBottom: 24,
-  },
-  contentColumnLast: {
-    paddingBottom: 12,
+    paddingTop: 8,
   },
   activityTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#0e1a13',
     marginBottom: 4,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   scheduleTime: {
     fontSize: 14,
     color: '#51946c',
     fontWeight: '500',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   activityLocation: {
     fontSize: 14,
     color: '#688273',
     marginBottom: 8,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   activityDescription: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#688273',
-    marginBottom: 8,
+    marginBottom: 12,
     fontStyle: 'italic',
-    lineHeight: 18,
+    lineHeight: 20,
   },
   partnerLink: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
     marginTop: 4,
   },
   partnerLinkText: {
