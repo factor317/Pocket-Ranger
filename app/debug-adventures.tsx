@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Play, RefreshCw, CheckCircle, XCircle, AlertCircle } from 'lucide-react-native';
+import { ArrowLeft, Play, RefreshCw, CircleCheck as CheckCircle, Circle as XCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
 import { router } from 'expo-router';
 
 interface DebugInfo {
