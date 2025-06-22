@@ -53,13 +53,33 @@ export default function ItineraryScreen() {
   const [adventureName, setAdventureName] = useState('');
 
   useEffect(() => {
+    console.log('🔍 Itinerary screen mounted, checking global state...');
+    
     // Check for current recommendation from global state
     if (global.currentRecommendation) {
+      console.log('✅ Found global recommendation:', {
+        name: global.currentRecommendation.name,
+        city: global.currentRecommendation.city,
+        scheduleLength: global.currentRecommendation.schedule?.length || 0
+      });
+      
       setCurrentItinerary(global.currentRecommendation);
       setIsUnsaved(global.isUnsavedItinerary || false);
       setAdventureName(global.currentRecommendation.name || '');
+    } else {
+      console.log('❌ No global recommendation found');
     }
   }, []);
+
+  // Add a debug effect to monitor state changes
+  useEffect(() => {
+    console.log('📊 Itinerary state updated:', {
+      hasItinerary: !!currentItinerary,
+      itineraryName: currentItinerary?.name,
+      scheduleLength: currentItinerary?.schedule?.length || 0,
+      isUnsaved
+    });
+  }, [currentItinerary, isUnsaved]);
 
   const openPartnerLink = async (url: string) => {
     try {
@@ -160,7 +180,15 @@ export default function ItineraryScreen() {
     );
   };
 
+  // Debug: Log the current state before rendering
+  console.log('🎨 Rendering itinerary screen with state:', {
+    hasItinerary: !!currentItinerary,
+    itineraryName: currentItinerary?.name,
+    scheduleLength: currentItinerary?.schedule?.length || 0
+  });
+
   if (!currentItinerary) {
+    console.log('📭 Showing empty state - no current itinerary');
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.emptyState}>
@@ -179,6 +207,8 @@ export default function ItineraryScreen() {
       </SafeAreaView>
     );
   }
+
+  console.log('🎯 Rendering full itinerary for:', currentItinerary.name);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -212,48 +242,60 @@ export default function ItineraryScreen() {
             <Text style={styles.scheduleTitle}>Your Itinerary</Text>
           </View>
           
-          {/* Vertical Timeline Layout */}
-          <View style={styles.timelineContainer}>
-            {currentItinerary.schedule.map((item, index) => {
-              const IconComponent = getActivityIcon(item.activity);
-              const isLast = index === currentItinerary.schedule.length - 1;
-              
-              return (
-                <View key={index} style={styles.timelineItem}>
-                  {/* Left side: Icon and timeline */}
-                  <View style={styles.timelineLeft}>
-                    <View style={styles.iconContainer}>
-                      <IconComponent size={20} color="#0e1a13" />
+          {/* Debug: Show schedule length */}
+          {currentItinerary.schedule && currentItinerary.schedule.length > 0 ? (
+            <View style={styles.timelineContainer}>
+              {currentItinerary.schedule.map((item, index) => {
+                const IconComponent = getActivityIcon(item.activity);
+                const isLast = index === currentItinerary.schedule.length - 1;
+                
+                console.log(`🎯 Rendering schedule item ${index + 1}:`, {
+                  activity: item.activity,
+                  time: item.time,
+                  location: item.location
+                });
+                
+                return (
+                  <View key={index} style={styles.timelineItem}>
+                    {/* Left side: Icon and timeline */}
+                    <View style={styles.timelineLeft}>
+                      <View style={styles.iconContainer}>
+                        <IconComponent size={20} color="#0e1a13" />
+                      </View>
+                      {!isLast && <View style={styles.timelineLine} />}
                     </View>
-                    {!isLast && <View style={styles.timelineLine} />}
-                  </View>
-                  
-                  {/* Right side: Content */}
-                  <View style={styles.timelineContent}>
-                    <Text style={styles.activityTitle}>{item.activity}</Text>
-                    <Text style={styles.scheduleTime}>{item.time}</Text>
-                    <Text style={styles.activityLocation}>{item.location}</Text>
                     
-                    {item.description && (
-                      <Text style={styles.activityDescription}>{item.description}</Text>
-                    )}
-                    
-                    {item.partnerLink && (
-                      <TouchableOpacity
-                        style={styles.partnerLink}
-                        onPress={() => openPartnerLink(item.partnerLink!)}
-                      >
-                        <Text style={styles.partnerLinkText}>
-                          View on {item.partnerName}
-                        </Text>
-                        <ExternalLink size={14} color="#94e0b2" />
-                      </TouchableOpacity>
-                    )}
+                    {/* Right side: Content */}
+                    <View style={styles.timelineContent}>
+                      <Text style={styles.activityTitle}>{item.activity}</Text>
+                      <Text style={styles.scheduleTime}>{item.time}</Text>
+                      <Text style={styles.activityLocation}>{item.location}</Text>
+                      
+                      {item.description && (
+                        <Text style={styles.activityDescription}>{item.description}</Text>
+                      )}
+                      
+                      {item.partnerLink && (
+                        <TouchableOpacity
+                          style={styles.partnerLink}
+                          onPress={() => openPartnerLink(item.partnerLink!)}
+                        >
+                          <Text style={styles.partnerLinkText}>
+                            View on {item.partnerName}
+                          </Text>
+                          <ExternalLink size={14} color="#94e0b2" />
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   </View>
-                </View>
-              );
-            })}
-          </View>
+                );
+              })}
+            </View>
+          ) : (
+            <View style={styles.noScheduleContainer}>
+              <Text style={styles.noScheduleText}>No schedule items available</Text>
+            </View>
+          )}
         </View>
 
         {/* Action Buttons */}
@@ -509,6 +551,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#94e0b2',
+  },
+  noScheduleContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  noScheduleText: {
+    fontSize: 16,
+    color: '#688273',
+    fontStyle: 'italic',
   },
   actionButtons: {
     padding: 20,
