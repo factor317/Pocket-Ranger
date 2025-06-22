@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { Bug } from 'lucide-react-native';
 
 interface LocationRecommendation {
   name: string;
@@ -69,32 +70,52 @@ export default function HomeScreen() {
       return;
     }
 
+    console.log('🚀 HOME: Starting search for:', inputText);
     setLoading(true);
     
     try {
       // Process with AI for conversation
+      console.log('🤖 HOME: Calling Groq Chat API...');
       const aiResponse = await processWithAI(inputText);
+      
+      console.log('📋 HOME: AI Response received:', {
+        shouldSearch: aiResponse.shouldSearch,
+        recommendedFile: aiResponse.recommendedFile,
+        response: aiResponse.response?.substring(0, 100) + '...'
+      });
       
       if (aiResponse.shouldSearch) {
         // Search for adventure recommendations from data source
+        console.log('🎯 HOME: Calling POC Plan API with recommended file:', aiResponse.recommendedFile);
+        
         const response = await fetch('/api/pocPlan', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ userInput: inputText }),
+          body: JSON.stringify({ 
+            userInput: inputText,
+            recommendedFile: aiResponse.recommendedFile
+          }),
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch recommendation');
+          throw new Error(`POC Plan API failed: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
+        
+        console.log('✅ HOME: POC Plan API response received:', {
+          name: data.name,
+          city: data.city,
+          scheduleLength: data.schedule?.length || 0
+        });
         
         // Store the recommendation globally and navigate to itinerary
         global.currentRecommendation = data;
         global.isUnsavedItinerary = true;
         
+        console.log('🎯 HOME: Navigating to itinerary tab...');
         // Navigate to itinerary tab to show results
         router.push('/itinerary');
       }
@@ -112,8 +133,8 @@ export default function HomeScreen() {
       setShowConversation(true);
       
     } catch (error) {
+      console.error('❌ HOME: Search error:', error);
       Alert.alert('Error', 'Failed to get recommendation. Please try again.');
-      console.error('Search error:', error);
     } finally {
       setLoading(false);
     }
@@ -177,6 +198,8 @@ export default function HomeScreen() {
 
   const processWithAI = async (message: string) => {
     try {
+      console.log('🤖 HOME: Processing with AI:', message);
+      
       const response = await fetch('/api/groq-chat', {
         method: 'POST',
         headers: {
@@ -189,12 +212,14 @@ export default function HomeScreen() {
       });
 
       if (!response.ok) {
-        throw new Error('AI processing failed');
+        throw new Error(`Groq Chat API failed: ${response.status} ${response.statusText}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('✅ HOME: AI processing completed successfully');
+      return result;
     } catch (error) {
-      console.error('AI processing error:', error);
+      console.error('❌ HOME: AI processing error:', error);
       return {
         response: "I'd love to help you plan your adventure! Let me search for some great options for you.",
         shouldSearch: true,
@@ -216,6 +241,14 @@ export default function HomeScreen() {
             source={{ uri: 'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2' }}
             style={styles.backgroundImage}
           />
+          
+          {/* Debug Button */}
+          <TouchableOpacity
+            style={styles.debugButton}
+            onPress={() => router.push('/debug-adventures')}
+          >
+            <Bug size={20} color="#ffffff" />
+          </TouchableOpacity>
         </View>
 
         {/* Main Content */}
@@ -249,15 +282,12 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* AI Response Display - TEMPORARILY COMMENTED OUT */}
-          {/* 
-          <AiResponseDisplay
-            aiResponse={aiResponse}
-            conversation={conversation}
-            showConversation={showConversation}
-            toggleConversation={toggleConversation}
-          />
-          */}
+          {/* AI Response Display - Simplified */}
+          {aiResponse && (
+            <View style={styles.aiResponseContainer}>
+              <Text style={styles.aiResponseText}>{aiResponse}</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -284,6 +314,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     position: 'absolute',
+  },
+  debugButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
+    padding: 8,
+    zIndex: 10,
   },
   mainContent: {
     flex: 1,
@@ -342,5 +381,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.15,
+  },
+  aiResponseContainer: {
+    margin: 16,
+    backgroundColor: '#f8faf9',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e8f0ea',
+  },
+  aiResponseText: {
+    fontSize: 15,
+    color: '#121714',
+    lineHeight: 22,
+    fontWeight: '400',
   },
 });
