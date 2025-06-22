@@ -300,11 +300,15 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
+          {/* Add this guard around ALL potential text outputs 
+          {someText ? <Text>{someText}</Text> : null}
+          
           {shouldShowAiResponse && (
             <View style={styles.aiResponseContainer}>
-              <Text style={styles.aiResponseText}>{aiResponse}</Text>
+              {styles.aiResponseText ? <Text style={styles.aiResponseText}>{aiResponse}</Text> : null }
             </View>
           )}
+          */}
         </View>
       </ScrollView>
     </View>
