@@ -138,7 +138,7 @@ export default function HomeScreen() {
       setAiResponse(dynamicResponse);
       
     } catch (error) {
-      console.error('❌ Search error:', error);
+      console.error('Search error:', error);
       Alert.alert('Error', 'Failed to get recommendation. Please try again.');
     } finally {
       setLoading(false);
