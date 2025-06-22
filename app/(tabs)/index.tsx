@@ -319,12 +319,6 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* AI Response Display - Only show if valid */}
-          {shouldShowAiResponse && (
-            <View style={styles.aiResponseContainer}>
-              <Text style={styles.aiResponseText}>{aiResponse}</Text>
-            </View>
-          )}
         </View>
       </ScrollView>
     </View>
