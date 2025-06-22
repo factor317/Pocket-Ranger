@@ -305,7 +305,7 @@ export default function HomeScreen() {
           */}
           {shouldShowAiResponse && (
             <View style={styles.aiResponseContainer}>
-              {styles.aiResponseText ? <Text style={styles.aiResponseText}>{aiResponse}</Text> : null }
+              {aiResponse ? <Text style={styles.aiResponseText}>{aiResponse}</Text> : null }
             </View>
           )}
 
