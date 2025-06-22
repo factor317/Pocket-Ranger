@@ -130,13 +130,14 @@ export default function HomeScreen() {
       ];
       setConversation(newConversation);
       
-      // Validate AI response before setting it
-      if (typeof dynamicResponse === 'string' && dynamicResponse.trim()) {
-        setAiResponse(dynamicResponse);
+      // CRITICAL: Validate AI response before setting it
+      if (typeof dynamicResponse === 'string' && dynamicResponse.trim().length > 0) {
+        setAiResponse(dynamicResponse.trim());
         setShowConversation(true);
       } else {
         console.warn('⚠️ HOME: Invalid AI response received, not displaying');
         setAiResponse('');
+        setShowConversation(false);
       }
       
     } catch (error) {
@@ -147,14 +148,14 @@ export default function HomeScreen() {
     }
   };
 
-  const generateDynamicResponse = (userInput: string, baseResponse: string) => {
+  const generateDynamicResponse = (userInput: string, baseResponse: string): string => {
     // Validate input parameters
-    if (!userInput || typeof userInput !== 'string') {
+    if (!userInput || typeof userInput !== 'string' || userInput.trim().length === 0) {
       return 'I\'d love to help you plan your adventure! Please provide more details about what you\'re looking for.';
     }
 
     // Use base response if it's valid, otherwise generate fallback
-    if (baseResponse && typeof baseResponse === 'string' && baseResponse.trim()) {
+    if (baseResponse && typeof baseResponse === 'string' && baseResponse.trim().length > 0) {
       return baseResponse.trim();
     }
 
@@ -249,6 +250,11 @@ export default function HomeScreen() {
     setShowConversation(!showConversation);
   };
 
+  // CRITICAL: Validate aiResponse before rendering
+  const shouldShowAiResponse = aiResponse && 
+                               typeof aiResponse === 'string' && 
+                               aiResponse.trim().length > 0;
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -294,7 +300,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {aiResponse && typeof aiResponse === 'string' && aiResponse.trim() && (
+          {shouldShowAiResponse && (
             <View style={styles.aiResponseContainer}>
               <Text style={styles.aiResponseText}>{aiResponse}</Text>
             </View>
