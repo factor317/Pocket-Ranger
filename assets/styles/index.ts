@@ -1,9 +1,12 @@
-// Main style exports
-export { colors } from './colors';
-export { typography, textStyles } from './typography';
-export { spacing, layout } from './spacing';
-export { shadows } from './shadows';
-export { componentStyles } from './components';
+// Import all style modules first
+import { colors } from './colors';
+import { typography, textStyles } from './typography';
+import { spacing, layout } from './spacing';
+import { shadows } from './shadows';
+import { componentStyles } from './components';
+
+// Re-export for direct access
+export { colors, typography, textStyles, spacing, layout, shadows, componentStyles };
 
 // Theme object for easy access
 export const theme = {
